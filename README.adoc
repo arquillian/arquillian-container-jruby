@@ -1,0 +1,82 @@
+= JRuby Arquillian Adapter
+
+This is an embedded http://arquillian.org[Arquillian] adapter that should simplify development with JRuby in combination with gems.
+The adapter accepts `JavaArchive` deployments that contain gems.
+It will automatically install the gems and inject properly configured `Ruby` and ScriptingContainer instances.
+
+The following example shows a simple test that uses http://asciidoctor.org[Asciidoctor] directly via its Ruby interface to render a string.
+
+.Example
+[source,java]
+----
+package foo.test;
+
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jruby.Ruby;
+import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
+
+@RunWith(Arquillian.class)
+public class BasicTest {
+
+    @ArquillianResource
+    private Ruby rubyInstance;
+
+    @ArquillianResource
+    private Deployer deployer;
+
+    @Deployment
+    public static JavaArchive deploy() throws Exception {
+        return ShrinkWrap.create(JavaArchive.class)
+                .addAsResource(
+                        Maven.configureResolver()
+                                .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
+                                .resolve("rubygems:asciidoctor:gem:1.5.2")
+                                .withTransitivity().asFile()[0]);
+    }
+
+    @Test
+    public void shouldRenderAsciidocDocument() throws Exception {
+        IRubyObject result = rubyInstance.evalScriptlet(
+                "require 'asciidoctor'\n" +
+                "Asciidoctor.convert '*This* is Asciidoctor.'");
+        assertThat(
+                (String)JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
+                containsString("<strong>This</strong> is Asciidoctor."));
+    }
+}
+----
+
+== Gem installation
+
+As gem installation takes a considerable amount of time the adapter supports caching of previously installed caches.
+Therefore you have to configure a cache directory where the adapter will store previously installed gems.
+
+The following `arquillian.xml` will make the adapter cache gems:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.jboss.org/schema/arquillian http://www.jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <container qualifier="jrubyCached" default="true">
+        <configuration>
+            <property name="gemDir">build/cachedtestgems</property>
+        </configuration>
+    </container>
+
+</arquillian>
+----

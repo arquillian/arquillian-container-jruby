@@ -1,0 +1,75 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    mavenLocal()
+    maven { url 'http://rubygems-proxy.torquebox.org/releases' }
+}
+
+version = '1.0'
+
+ext {
+    version_arquillian          = '1.1.6.Final'
+    version_shrinkwrap_resolver = '2.1.1'
+    version_junit               = '4.12'
+    version_hamcrest            = '1.3'
+    version_jruby               = '1.7.18'
+    version_commons_io          = '2.2'
+    version_mockito             = '1.10.19'
+}
+
+repositories {
+    jcenter()
+}
+
+configurations {
+    testgems
+}
+
+dependencies {
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-spi', version: version_arquillian
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-spi', version: version_arquillian
+    compile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
+
+    testCompile group: 'org.jboss.arquillian.junit', name: 'arquillian-junit-container', version: version_arquillian
+    testCompile group: 'org.jboss.shrinkwrap.resolver', name: 'shrinkwrap-resolver-depchain', version: version_shrinkwrap_resolver
+    testCompile group: 'junit', name: 'junit', version: version_junit
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
+    testCompile group: 'commons-io', name: 'commons-io', version: version_commons_io
+    testCompile group: 'org.mockito', name: 'mockito-all', version: version_mockito
+
+    testgems group: 'rubygems', name: 'asciidoctor', version: '1.5.2'
+}
+
+
+test {
+
+    filter {
+        includeTestsMatching 'org.arquillian.jruby.gems.*'
+    }
+
+}
+
+task integrationTestUncached(type: Test) {
+
+    systemProperty 'arquillian.launch', 'jrubyUncached'
+
+    filter {
+        includeTestsMatching '*.JRubyUncachedTest'
+    }
+
+}
+
+task integrationTestCached(type: Test) {
+
+    systemProperty 'arquillian.launch', 'jrubyCached'
+    filter {
+        includeTestsMatching '*.JRubyCachedTest'
+    }
+
+}
+
+check.dependsOn integrationTestUncached
+check.dependsOn integrationTestCached
