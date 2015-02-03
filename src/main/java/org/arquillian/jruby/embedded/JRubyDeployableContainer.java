@@ -25,6 +25,11 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.test.spi.annotation.ClassScoped;
+import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
@@ -39,21 +44,30 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 public class JRubyDeployableContainer implements DeployableContainer {
 
     private static final Logger LOG = Logger.getLogger(JRubyDeployableContainer.class.getName());
 
-    static Ruby rubyInstance;
-
-    static ScriptingContainer scriptingContainer;
-
     private JRubyConfiguration containerConfig;
 
     private GemInstaller installer;
 
-    private Path tempDir;
+    //static Path tempDir;
+
+    @Inject
+    @SuiteScoped
+    private InstanceProducer<ScriptingContainer> scriptingContainerInstanceProducer;
+
+    @Inject
+    @SuiteScoped
+    private InstanceProducer<Ruby> rubyInstanceProducer;
+
+    @Inject
+    @ApplicationScoped
+    private InstanceProducer<JRubyTemporaryDir> temporaryDirInstanceProducer;
 
     @Override
     public Class<JRubyConfiguration> getConfigurationClass() {
@@ -67,17 +81,22 @@ public class JRubyDeployableContainer implements DeployableContainer {
 
     @Override
     public void start() throws LifecycleException {
-        scriptingContainer = new ScriptingContainer();
+        ScriptingContainer scriptingContainer = new ScriptingContainer();
 
-        tempDir = null;
+        Path tempDir = null;
         try {
             tempDir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "arquillianJRubyCache");
-            scriptingContainer.setClassLoader(new URLClassLoader(new URL[]{tempDir.toUri().toURL()}));
+            temporaryDirInstanceProducer.set(new JRubyTemporaryDir(tempDir));
+            System.out.println(tempDir.toAbsolutePath().toString());
+            //scriptingContainer.setLoadPaths(Collections.singletonList(tempDir.toAbsolutePath().toString()));
+            //scriptingContainer.setClassLoader(new URLClassLoader(new URL[]{tempDir.toUri().toURL()}));
         } catch (IOException e) {
             throw new LifecycleException("Could not create temporary directory!", e);
         }
-
-        rubyInstance = scriptingContainer.getProvider().getRuntime();
+        /*
+        scriptingContainerInstanceProducer.set(scriptingContainer);
+        rubyInstanceProducer.set(scriptingContainer.getProvider().getRuntime());
+        */
     }
 
     @Override
@@ -120,6 +139,7 @@ public class JRubyDeployableContainer implements DeployableContainer {
         if (installer != null) {
             throw new IllegalStateException("Only one deployment at a time supported.");
         }
+        Path tempDir = temporaryDirInstanceProducer.get().getTempDir();
 
         installer = containerConfig.getGemDir() != null ?
                 new CachingGemInstaller(Paths.get(containerConfig.getGemDir()), tempDir) :

@@ -11,6 +11,8 @@ public class JRubyExtension implements LoadableExtension {
         builder.service(DeployableContainer.class, JRubyDeployableContainer.class);
         builder.service(ResourceProvider.class, RubyResourceProvider.class);
         builder.service(ResourceProvider.class, ScriptingContainerResourceProvider.class);
+
+        builder.observer(JRubyTestObserver.class);
     }
 
 }
