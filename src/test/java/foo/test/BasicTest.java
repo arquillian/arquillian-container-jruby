@@ -8,6 +8,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jruby.Ruby;
+import org.jruby.embed.ScriptingContainer;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class BasicTest {
     private Ruby rubyInstance;
 
     @ArquillianResource
-    private Deployer deployer;
+    private ScriptingContainer scriptingContainer;
 
     @Deployment
     public static JavaArchive deploy() throws Exception {
@@ -42,6 +43,14 @@ public class BasicTest {
                 "Asciidoctor.convert '*This* is Asciidoctor.'");
         assertThat(
                 (String)JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
+                containsString("<strong>This</strong> is Asciidoctor."));
+    }
+
+    @Test
+    public void shouldExecuteRubyResource() throws Exception {
+        String result = (String) scriptingContainer.runScriptlet(getClass().getClassLoader().getResourceAsStream("asciidoctortest.rb"), "asciidoctortest.rb");
+        assertThat(
+                result,
                 containsString("<strong>This</strong> is Asciidoctor."));
     }
 }

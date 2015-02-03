@@ -34,7 +34,7 @@ public class BasicTest {
     private Ruby rubyInstance;
 
     @ArquillianResource
-    private Deployer deployer;
+    private ScriptingContainer scriptingContainer;
 
     @Deployment
     public static JavaArchive deploy() throws Exception {
@@ -47,12 +47,22 @@ public class BasicTest {
     }
 
     @Test
-    public void shouldRenderAsciidocDocument() throws Exception {
+    public void shouldRenderAsciidocDocumentWithRubyInstance() throws Exception {
         IRubyObject result = rubyInstance.evalScriptlet(
                 "require 'asciidoctor'\n" +
                 "Asciidoctor.convert '*This* is Asciidoctor.'");
         assertThat(
                 (String)JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
+                containsString("<strong>This</strong> is Asciidoctor."));
+    }
+
+    @Test
+    public void shouldRenderAsciidocDocumentWithScriptingContainer() throws Exception {
+        String result = (String) scriptingContainer.evalScriptlet(
+                "require 'asciidoctor'\n" +
+                "Asciidoctor.convert '*This* is Asciidoctor.'");
+        assertThat(
+                result,
                 containsString("<strong>This</strong> is Asciidoctor."));
     }
 }
