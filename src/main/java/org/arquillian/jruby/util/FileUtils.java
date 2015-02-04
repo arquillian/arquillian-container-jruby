@@ -3,6 +3,7 @@ package org.arquillian.jruby.util;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.asset.Asset;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,21 +70,29 @@ public final class FileUtils {
             // Was unpacked before.
             return gemFile;
         }
-        try (FileOutputStream gemFileOut = new FileOutputStream(gemFile)) {
-            // TODO: Use commons-io for this? Or is there already sth in Arquillian/ShrinkWrap?
-            InputStream gemIn = gemEntry.getAsset().openStream();
-
-            byte[] buf = new byte[65535];
-            int bytesRead = gemIn.read(buf);
-            while (bytesRead > 0) {
-                gemFileOut.write(buf, 0, bytesRead);
-                bytesRead = gemIn.read(buf);
+        if (!gemFile.getParentFile().exists()) {
+            if (!gemFile.getParentFile().mkdirs()) {
+                throw new DeploymentException("Error while unpacking file " + archivePath + " from archive. Could not create directory " + gemFile.getParentFile());
             }
-
-            return gemFile;
-        } catch (IOException e) {
-            throw new DeploymentException("Error while unpacking gem " + archivePath + " from archive", e);
         }
+        Asset asset = gemEntry.getAsset();
+        if (asset != null) {
+            try (InputStream gemIn = gemEntry.getAsset().openStream();
+                 FileOutputStream gemFileOut = new FileOutputStream(gemFile);) {
+                // TODO: Use commons-io for this? Or is there already sth in Arquillian/ShrinkWrap?
+
+                byte[] buf = new byte[65535];
+                int bytesRead = gemIn.read(buf);
+                while (bytesRead > 0) {
+                    gemFileOut.write(buf, 0, bytesRead);
+                    bytesRead = gemIn.read(buf);
+                }
+                return gemFile;
+            } catch (IOException e) {
+                throw new DeploymentException("Error while unpacking file " + archivePath + " from archive", e);
+            }
+        }
+        return gemFile;
     }
 
 }

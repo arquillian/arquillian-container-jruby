@@ -22,29 +22,19 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.test.spi.annotation.ClassScoped;
-import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-import org.jruby.Ruby;
-import org.jruby.embed.ScriptingContainer;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.logging.Logger;
 
 public class JRubyDeployableContainer implements DeployableContainer {
@@ -54,16 +44,6 @@ public class JRubyDeployableContainer implements DeployableContainer {
     private JRubyConfiguration containerConfig;
 
     private GemInstaller installer;
-
-    //static Path tempDir;
-
-    @Inject
-    @SuiteScoped
-    private InstanceProducer<ScriptingContainer> scriptingContainerInstanceProducer;
-
-    @Inject
-    @SuiteScoped
-    private InstanceProducer<Ruby> rubyInstanceProducer;
 
     @Inject
     @ApplicationScoped
@@ -81,28 +61,19 @@ public class JRubyDeployableContainer implements DeployableContainer {
 
     @Override
     public void start() throws LifecycleException {
-        ScriptingContainer scriptingContainer = new ScriptingContainer();
-
-        Path tempDir = null;
         try {
-            tempDir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "arquillianJRubyCache");
-            temporaryDirInstanceProducer.set(new JRubyTemporaryDir(tempDir));
-            System.out.println(tempDir.toAbsolutePath().toString());
-            //scriptingContainer.setLoadPaths(Collections.singletonList(tempDir.toAbsolutePath().toString()));
-            //scriptingContainer.setClassLoader(new URLClassLoader(new URL[]{tempDir.toUri().toURL()}));
+            Path tempGemDir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "arquillianJRubyGemDir");
+            Path tempArchiveDir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "arquillianJRubyArchiveDir");
+            temporaryDirInstanceProducer.set(new JRubyTemporaryDir(tempGemDir, tempArchiveDir));
+            LOG.fine("Unpacking archive in " + tempArchiveDir);
+            LOG.fine("Installing gems in " + tempGemDir);
         } catch (IOException e) {
             throw new LifecycleException("Could not create temporary directory!", e);
         }
-        /*
-        scriptingContainerInstanceProducer.set(scriptingContainer);
-        rubyInstanceProducer.set(scriptingContainer.getProvider().getRuntime());
-        */
     }
 
     @Override
-    public void stop() throws LifecycleException {
-
-    }
+    public void stop() throws LifecycleException {}
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -123,7 +94,7 @@ public class JRubyDeployableContainer implements DeployableContainer {
     public void undeploy(Archive archive) throws DeploymentException {
 
         try {
-            installer.deleteInstallationDir();
+            installer.deleteInstallationDirs();
         } catch (IOException e) {
             throw new DeploymentException("Could not delete temporary directory!", e);
         }
@@ -132,18 +103,14 @@ public class JRubyDeployableContainer implements DeployableContainer {
 
     @Override
     public ProtocolMetaData deploy(Archive archive) throws DeploymentException {
-        if (!Validate.isArchiveOfType(JavaArchive.class, archive)) {
-            throw new IllegalArgumentException("Only jars supported by JRuby container.");
-        }
-
         if (installer != null) {
             throw new IllegalStateException("Only one deployment at a time supported.");
         }
-        Path tempDir = temporaryDirInstanceProducer.get().getTempDir();
-
+        Path tempGemDir = temporaryDirInstanceProducer.get().getTempGemDir();
+        Path tempArchiveDir  = temporaryDirInstanceProducer.get().getTempArchiveDir();
         installer = containerConfig.getGemDir() != null ?
-                new CachingGemInstaller(Paths.get(containerConfig.getGemDir()), tempDir) :
-                new UncachedGemInstaller(tempDir);
+                new CachingGemInstaller(Paths.get(containerConfig.getGemDir()), tempGemDir, tempArchiveDir) :
+                new UncachedGemInstaller(tempGemDir, tempArchiveDir);
 
         long start = System.currentTimeMillis();
         installer.installGemsFromArchive(archive);

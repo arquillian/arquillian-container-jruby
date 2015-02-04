@@ -4,14 +4,27 @@ import java.nio.file.Path;
 
 public class JRubyTemporaryDir {
 
-    private Path tempDir;
+    private final Path tempArchiveDir;
+
+    private Path tempGemDir;
 
 
-    public JRubyTemporaryDir(Path tempDir) {
-        this.tempDir = tempDir;
+    public JRubyTemporaryDir(Path tempGemDir, Path tempArchiveDir) {
+        this.tempGemDir = tempGemDir;
+        this.tempArchiveDir = tempArchiveDir;
     }
 
-    public Path getTempDir() {
-        return tempDir;
+    /**
+     * @return The directory where the gems are installed in.
+     */
+    public Path getTempGemDir() {
+        return tempGemDir;
+    }
+
+    /**
+     * @return The directory where the archive is unpacked
+     */
+    public Path getTempArchiveDir() {
+        return tempArchiveDir;
     }
 }
