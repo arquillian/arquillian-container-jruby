@@ -31,8 +31,9 @@ public class JRubyGemCacheTest {
         // Given
         File cachedir = new File("build/emptytestgemcache");
         cachedir.mkdirs();
-        Path targetDir = Paths.get("build", "shouldReturnNullOnCacheMissTargetDir");
-        CachingGemInstaller gemCache = new CachingGemInstaller(Paths.get(cachedir.toURI()), targetDir);
+        Path targetGemDir = Paths.get("build", "shouldReturnNullOnCacheMissGemDir");
+        Path targetArchiveDir = Paths.get("build", "shouldReturnNullOnCacheMissArchiveDir");
+        CachingGemInstaller gemCache = new CachingGemInstaller(Paths.get(cachedir.toURI()), targetGemDir, targetArchiveDir);
 
         Map<String, File> gemFiles = Collections.singletonMap(
                 asciidoctorGem.getName(),
@@ -51,8 +52,9 @@ public class JRubyGemCacheTest {
         // Given
         File cachedir = new File("build/testgemcache");
         cachedir.mkdirs();
-        Path targetDir = Paths.get("build", "shouldReturnCachedDirOnCacheHitTargetDir");
-        CachingGemInstaller gemCache = new CachingGemInstaller(Paths.get(cachedir.toURI()), targetDir);
+        Path targetGemDir = Paths.get("build", "shouldReturnCachedDirOnCacheHitGemDir");
+        Path targetArchiveDir = Paths.get("build", "shouldReturnCachedDirOnCacheHitArchiveDir");
+        CachingGemInstaller gemCache = new CachingGemInstaller(Paths.get(cachedir.toURI()), targetGemDir, targetArchiveDir);
 
         File originalTestTargetDir = new File("build/originalTestCachehitdir");
         originalTestTargetDir.mkdirs();

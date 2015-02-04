@@ -30,18 +30,19 @@ public class JRubyGemInstallerTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class)
                 .addAsResource(asciidoctorGem);
 
-        Path targetDir = Paths.get("build", "shouldInstallGem");
+        Path targetGemDir = Paths.get("build", "shouldInstallGemGemDir");
+        Path targetArchiveDir = Paths.get("build", "shouldInstallGemArchiveDir");
 
         // When
-        new UncachedGemInstaller(targetDir).installGemsFromArchive(jar);
+        new UncachedGemInstaller(targetGemDir, targetArchiveDir).installGemsFromArchive(jar);
 
         // Then
         assertTrue(
                 "Gem not unpacked from archive!",
-                targetDir.resolve("asciidoctor-1.5.2.gem").toFile().exists());
+                targetArchiveDir.resolve("asciidoctor-1.5.2.gem").toFile().exists());
         assertTrue(
                 "Gem not installed",
-                targetDir.resolve("gems")
+                targetGemDir.resolve("gems")
                         .resolve("asciidoctor-1.5.2")
                         .resolve("lib")
                         .resolve("asciidoctor.rb").toFile().exists());
@@ -54,18 +55,20 @@ public class JRubyGemInstallerTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class)
                 .addAsResource(asciidoctorGem);
 
-        Path targetDir = Paths.get("build", "shouldDeleteGemTargetDir");
+        Path targetGemDir = Paths.get("build", "shouldDeleteGemTargetDirGemDir");
+        Path targetArchiveDir = Paths.get("build", "shouldDeleteGemTargetDirArchiveDir");
 
-        File testFile = new File(targetDir.toFile(), "testFile");
+        File testFile = new File(targetGemDir.toFile(), "testFile");
         FileUtils.writeStringToFile(testFile, "Hello World");
         assertTrue(testFile.exists());
 
         // When
-        new UncachedGemInstaller(targetDir).deleteInstallationDir();
+        new UncachedGemInstaller(targetGemDir, targetArchiveDir).deleteInstallationDirs();
 
         // Then
         assertFalse(testFile.exists());
-        assertFalse(targetDir.toFile().exists());
+        assertFalse(targetGemDir.toFile().exists());
+        assertFalse(targetArchiveDir.toFile().exists());
     }
 
 

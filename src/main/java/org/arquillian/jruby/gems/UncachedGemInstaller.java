@@ -4,15 +4,11 @@ import org.arquillian.jruby.util.FileUtils;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.Filters;
 import org.jboss.shrinkwrap.api.Node;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,14 +17,22 @@ public class UncachedGemInstaller implements GemInstaller {
 
     private static final Logger LOG = Logger.getLogger(UncachedGemInstaller.class.getName());
 
-    private Path targetDir;
+    private final Path targetArchiveDir;
 
-    public UncachedGemInstaller(Path targetDir) throws DeploymentException {
-        this.targetDir = targetDir;
+    private final Path targetGemDir;
 
-        if (!targetDir.toFile().exists()) {
-            if (!targetDir.toFile().mkdirs()) {
+    public UncachedGemInstaller(Path targetGemDir, Path targetArchiveDir) throws DeploymentException {
+        this.targetGemDir = targetGemDir;
+        this.targetArchiveDir = targetArchiveDir;
+
+        if (!targetGemDir.toFile().exists()) {
+            if (!targetGemDir.toFile().mkdirs()) {
                 throw new DeploymentException("Could not create gem install directory!");
+            }
+        }
+        if (!targetArchiveDir.toFile().exists()) {
+            if (!targetArchiveDir.toFile().mkdirs()) {
+                throw new DeploymentException("Could not create archive install directory!");
             }
         }
     }
@@ -36,7 +40,9 @@ public class UncachedGemInstaller implements GemInstaller {
     @Override
     public void installGemsFromArchive(Archive archive) throws DeploymentException {
 
-        Map<String, File> gemsToInstall = unpackGemsFromArchive(archive);
+        Map<ArchivePath, File> archiveFiles = unpackArchive(archive);
+
+        Map<String, File> gemsToInstall = getGems(archiveFiles);
 
         LOG.fine("Invoke JRuby install");
         try {
@@ -47,22 +53,30 @@ public class UncachedGemInstaller implements GemInstaller {
         LOG.fine("Finished JRuby installation");
     }
 
-    Map<String,File> unpackGemsFromArchive(Archive archive) throws DeploymentException {
-        Map<ArchivePath, Node> gems = archive.getContent(Filters.include("/.*.gem"));
+    Map<String, File> getGems(Map<ArchivePath, File> archiveFiles) {
+        Map<String, File> ret = new HashMap<>();
+        for (Map.Entry<ArchivePath, File> archiveFile: archiveFiles.entrySet()) {
+            if (archiveFile.getKey().get().matches("/.+gem")) {
+                ret.put(getGemFullNameFromArchivePath(archiveFile.getKey()), archiveFile.getValue());
+            }
+        }
+        return ret;
+    }
+
+    Map<ArchivePath, File> unpackArchive(Archive archive) throws DeploymentException {
+        Map<ArchivePath, Node> gems = archive.getContent();
         LOG.fine("Installing " + gems.keySet());
 
-        Map<String, File> gemsToInstall = new HashMap<>();
+        Map<ArchivePath, File> files = new HashMap<>();
 
         for (Map.Entry<ArchivePath, Node> gemEntry: gems.entrySet()) {
             LOG.fine("Unpack " + gemEntry.getKey());
 
-            String gemName = getGemFullNameFromArchivePath(gemEntry.getKey());
+            File gemFile = FileUtils.unpackGemFromArchive(gemEntry.getKey(), gemEntry.getValue(), targetArchiveDir);
 
-            File gemFile = FileUtils.unpackGemFromArchive(gemEntry.getKey(), gemEntry.getValue(), targetDir);
-
-            gemsToInstall.put(gemName, gemFile);
+            files.put(gemEntry.getKey(), gemFile);
         }
-        return gemsToInstall;
+        return files;
     }
 
 
@@ -82,7 +96,7 @@ public class UncachedGemInstaller implements GemInstaller {
             pb.command().add(gemToInstall.getValue().getAbsolutePath());
         }
         pb.command().add("--ignore-dependencies");
-        pb.command().add("--install-dir=" + targetDir.toAbsolutePath().toString());
+        pb.command().add("--install-dir=" + targetGemDir.toAbsolutePath().toString());
         pb.command().add("-N");
         pb.command().add("--platform=java");
 
@@ -109,8 +123,9 @@ public class UncachedGemInstaller implements GemInstaller {
     }
 
     @Override
-    public void deleteInstallationDir() throws IOException {
-        FileUtils.deleteDir(targetDir);
+    public void deleteInstallationDirs() throws IOException {
+        FileUtils.deleteDir(targetGemDir);
+        FileUtils.deleteDir(targetArchiveDir);
     }
 
 }

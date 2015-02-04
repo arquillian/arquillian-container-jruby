@@ -3,6 +3,7 @@ package org.arquillian.jruby.gems;
 import org.arquillian.jruby.util.FileUtils;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,12 +22,14 @@ public class CachingGemInstaller implements GemInstaller {
     private final Path cacheDir;
 
     private final UncachedGemInstaller uncachedGemInstaller;
-    private final Path targetDir;
+    private final Path targetGemDir;
+    private final Path targetArchiveDir;
 
-    public CachingGemInstaller(Path cacheDir, Path targetDir) throws DeploymentException {
+    public CachingGemInstaller(Path cacheDir, Path targetGemDir, Path targetArchiveDir) throws DeploymentException {
         this.cacheDir = cacheDir;
-        this.targetDir = targetDir;
-        this.uncachedGemInstaller = new UncachedGemInstaller(targetDir);
+        this.targetGemDir = targetGemDir;
+        this.targetArchiveDir = targetArchiveDir;
+        this.uncachedGemInstaller = new UncachedGemInstaller(targetGemDir, targetArchiveDir);
     }
 
     Path getCachedGemDirectory(Map<String, File> gemFiles) throws NoSuchAlgorithmException {
@@ -65,12 +68,14 @@ public class CachingGemInstaller implements GemInstaller {
 
     @Override
     public void installGemsFromArchive(Archive archive) throws DeploymentException {
-        Map<String, File> gemsToInstall = uncachedGemInstaller.unpackGemsFromArchive(archive);
+        Map<ArchivePath, File> archiveFiles = uncachedGemInstaller.unpackArchive(archive);
+
+        Map<String, File> gemsToInstall = uncachedGemInstaller.getGems(archiveFiles);
 
         try {
             Path cacheHit = getCachedGemDirectory(gemsToInstall);
             if (cacheHit != null) {
-                FileUtils.copyDir(cacheHit, targetDir);
+                FileUtils.copyDir(cacheHit, targetGemDir);
                 return;
             }
         } catch (NoSuchAlgorithmException | IOException e) {
@@ -80,7 +85,7 @@ public class CachingGemInstaller implements GemInstaller {
         uncachedGemInstaller.installGemsFromArchive(archive);
 
         try {
-            addToCache(gemsToInstall, targetDir);
+            addToCache(gemsToInstall, targetGemDir);
         } catch (IOException | NoSuchAlgorithmException e) {
             throw new DeploymentException("Unexpected exception while copying gem dir to cache", e);
         }
@@ -88,7 +93,7 @@ public class CachingGemInstaller implements GemInstaller {
     }
 
     @Override
-    public void deleteInstallationDir() throws IOException {
-        uncachedGemInstaller.deleteInstallationDir();
+    public void deleteInstallationDirs() throws IOException {
+        uncachedGemInstaller.deleteInstallationDirs();
     }
 }
