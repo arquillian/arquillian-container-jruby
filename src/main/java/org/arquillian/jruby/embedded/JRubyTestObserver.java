@@ -1,5 +1,6 @@
 package org.arquillian.jruby.embedded;
 
+import org.arquillian.jruby.api.RubyScript;
 import org.arquillian.jruby.resources.ScopedResources;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
@@ -11,6 +12,9 @@ import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -37,7 +41,6 @@ public class JRubyTestObserver {
         ScopedResources scopedResources = new ScopedResources();
         scopedResources.setClassScopedScriptingContainer(scriptingContainer);
         scopedResourcesInstanceProducer.set(scopedResources);
-        System.out.println("Observer instance: "+ scriptingContainer.getProvider().getRuntime());
     }
 
     // Precedence is 10 so that we are invoked before ResourceProviders are called
@@ -53,6 +56,46 @@ public class JRubyTestObserver {
                                 temporaryDirInstance.get().getTempArchiveDir().toUri().toURL()}));
 
         scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(scriptingContainer);
+
+        RubyScript rubyScriptAnnotation = beforeEvent.getTestMethod().getAnnotation(RubyScript.class);
+        if (rubyScriptAnnotation != null) {
+            String[] scripts = rubyScriptAnnotation.value();
+            if (scripts != null) {
+                for (String script: scripts) {
+                    applyScript(scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer(), script);
+                }
+            }
+        }
+    }
+
+
+    // Precedence is -10 so that we are invoked after ResourceProviders are called
+    public void beforeTestInvokeScript(@Observes(precedence = -10) Before beforeEvent) throws IOException {
+        ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().isTestScopedScriptingContainerRequested()
+                ? scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer()
+                : scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
+
+        handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestClass().getAnnotation(RubyScript.class));
+        handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestMethod().getAnnotation(RubyScript.class));
+    }
+
+    public void handleRubyScriptAnnotation(ScriptingContainer scriptingContainer, RubyScript rubyScriptAnnotation) throws IOException {
+        if (rubyScriptAnnotation != null) {
+            String[] scripts = rubyScriptAnnotation.value();
+            if (scripts != null) {
+                for (String script : scripts) {
+                    applyScript(scriptingContainer, script);
+                }
+            }
+        }
+    }
+
+    private void applyScript(ScriptingContainer scriptingContainer, String script) throws IOException {
+        try (FileReader scriptReader = new FileReader(temporaryDirInstance.get().getTempArchiveDir().resolve(script).toAbsolutePath().toFile())) {
+            scriptingContainer.runScriptlet(
+                    scriptReader,
+                    script);
+        }
     }
 
 }

@@ -6,7 +6,11 @@ public class ScopedResources {
 
     private ScriptingContainer classScopedScriptingContainer;
 
+    private boolean classScopedScriptingContainerRequested;
+
     private ScriptingContainer testScopedScriptingContainer;
+
+    private boolean testScopedScriptingContainerRequested;
 
     public void setClassScopedScriptingContainer(ScriptingContainer classScopedScriptingContainer) {
         this.classScopedScriptingContainer = classScopedScriptingContainer;
@@ -22,5 +26,21 @@ public class ScopedResources {
 
     public ScriptingContainer getTestScopedScriptingContainer() {
         return testScopedScriptingContainer;
+    }
+
+    public void setTestScopedScriptingContainerRequested(boolean testScopedScriptingContainerRequested) {
+        this.testScopedScriptingContainerRequested = testScopedScriptingContainerRequested;
+    }
+
+    public boolean isTestScopedScriptingContainerRequested() {
+        return testScopedScriptingContainerRequested;
+    }
+
+    public void setClassScopedScriptingContainerRequested(boolean classScopedScriptingContainerRequested) {
+        this.classScopedScriptingContainerRequested = classScopedScriptingContainerRequested;
+    }
+
+    public boolean isClassScopedScriptingContainerRequested() {
+        return classScopedScriptingContainerRequested;
     }
 }

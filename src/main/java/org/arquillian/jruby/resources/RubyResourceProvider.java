@@ -23,13 +23,16 @@ public class RubyResourceProvider implements ResourceProvider {
     @Override
     public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
         if (qualifiers == null) {
+            scopedResourcesInstance.get().setTestScopedScriptingContainerRequested(true);
             return scopedResourcesInstance.get().getTestScopedScriptingContainer().getProvider().getRuntime();
         }
         for (Annotation qualifier: qualifiers) {
             if (qualifier.annotationType() == ApplicationScoped.class) {
+                scopedResourcesInstance.get().setClassScopedScriptingContainerRequested(true);
                 return scopedResourcesInstance.get().getClassScopedScriptingContainer().getProvider().getRuntime();
             }
         }
+        scopedResourcesInstance.get().setTestScopedScriptingContainerRequested(true);
         return scopedResourcesInstance.get().getTestScopedScriptingContainer().getProvider().getRuntime();
     }
 }
