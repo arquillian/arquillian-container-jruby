@@ -54,8 +54,6 @@ public class BasicTest {
                 .add(new StringAsset("require 'asciidoctor'\n"), "requireasciidoctor.rb");
     }
 
-    private static Ruby lastRubyInstance;
-
     @Test
     public void shouldExecuteSimpleRubyStatement() throws Exception {
 
