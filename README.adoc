@@ -59,9 +59,6 @@ public class BasicTest {
     @Test
     public void shouldExecuteSimpleRubyStatement() throws Exception {
 
-        assertNotSame(lastRubyInstance, rubyInstance);
-        lastRubyInstance = rubyInstance;
-
         IRubyObject result = rubyInstance.evalScriptlet(
                 "java.lang.System.getProperties.map {|k,v| %(#{k}=#{v.inspect}) } * '\\n'");
         assertThat(
@@ -72,8 +69,6 @@ public class BasicTest {
     @Test
     @RubyScript("requireasciidoctor.rb") // <3>
     public void shouldApplyScriptBeforeTest() throws Exception {
-        assertNotSame(lastRubyInstance, rubyInstance);
-        lastRubyInstance = rubyInstance;
 
         IRubyObject result = rubyInstance.evalScriptlet(
                 "Asciidoctor.convert '*This* is Asciidoctor.'");
