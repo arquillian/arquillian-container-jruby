@@ -81,6 +81,9 @@ public class UncachedGemInstaller implements GemInstaller {
 
 
     private void installGems(Map<String, File> gemsToInstall) throws IOException, InterruptedException, DeploymentException {
+        if (gemsToInstall == null || gemsToInstall.isEmpty()) {
+            return;
+        }
         // This is deliberately taken from the JRuby gradle plugin
         // https://github.com/jruby-gradle/jruby-gradle-plugin
         final String javaHome = System.getProperty("java.home");
