@@ -108,3 +108,20 @@ The following `arquillian.xml` will make the adapter cache gems:
 
 </arquillian>
 ----
+
+== Resource Injection
+
+The container adapter knows to inject JRuby `ScriptingContainer` and `Ruby` instances.
+By default an own instance per test method will be injected.
+By adding the annotation `@org.jboss.arquillian.core.api.annotation.ApplicationScoped` to an `@ArquillianResource` you will get one instance for the whole test class.
+
+
+== Script execution
+
+It is possible to apply scripts from the deployment archive before the test on the injected resources.
+Therefore define the annotation `org.arquillian.jruby.api.RubyScript` on the test class or the test method.
+The annotation gets a list of ArchivePath names that must exist in the result of the deployment method.
+Scripts defined in annotations on the class are defined before those of the test method.
+
+If the test has an injected `ScriptingContainer` or `Ruby` instance per test method the scripts are executed on this `ScriptingContainer`.
+Otherwise they are executed on the `ScriptingContainer` created for the test class.

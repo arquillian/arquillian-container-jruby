@@ -7,6 +7,7 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.arquillian.test.spi.event.suite.After;
 import org.jboss.arquillian.test.spi.event.suite.Before;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jruby.embed.LocalContextScope;
@@ -30,53 +31,20 @@ public class JRubyTestObserver {
     private Instance<JRubyTemporaryDir> temporaryDirInstance;
 
     public void beforeClass(@Observes BeforeClass beforeClass) throws IOException {
-        ScriptingContainer scriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
-
-        scriptingContainer.setClassLoader(
-                new URLClassLoader(
-                        new URL[]{
-                                temporaryDirInstance.get().getTempGemDir().toUri().toURL(),
-                                temporaryDirInstance.get().getTempArchiveDir().toUri().toURL()}));
-
-        ScopedResources scopedResources = new ScopedResources();
-        scopedResources.setClassScopedScriptingContainer(scriptingContainer);
-        scopedResourcesInstanceProducer.set(scopedResources);
+        scopedResourcesInstanceProducer.set(new ScopedResources());
     }
-
-    // Precedence is 10 so that we are invoked before ResourceProviders are called
-    public void beforeTest(@Observes(precedence = 10) Before beforeEvent) throws IOException {
-        ScriptingContainer scriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
-
-        Path tempDir = temporaryDirInstance.get().getTempGemDir();
-
-        scriptingContainer.setClassLoader(
-                new URLClassLoader(
-                        new URL[]{
-                                temporaryDirInstance.get().getTempGemDir().toUri().toURL(),
-                                temporaryDirInstance.get().getTempArchiveDir().toUri().toURL()}));
-
-        scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(scriptingContainer);
-
-        RubyScript rubyScriptAnnotation = beforeEvent.getTestMethod().getAnnotation(RubyScript.class);
-        if (rubyScriptAnnotation != null) {
-            String[] scripts = rubyScriptAnnotation.value();
-            if (scripts != null) {
-                for (String script: scripts) {
-                    applyScript(scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer(), script);
-                }
-            }
-        }
-    }
-
 
     // Precedence is -10 so that we are invoked after ResourceProviders are called
+    // Apply scripts on the requested scripting containers
     public void beforeTestInvokeScript(@Observes(precedence = -10) Before beforeEvent) throws IOException {
-        ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().isTestScopedScriptingContainerRequested()
+        ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer() != null
                 ? scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer()
                 : scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
 
-        handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestClass().getAnnotation(RubyScript.class));
-        handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestMethod().getAnnotation(RubyScript.class));
+        if (scriptingContainer != null) {
+            handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestClass().getAnnotation(RubyScript.class));
+            handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestMethod().getAnnotation(RubyScript.class));
+        }
     }
 
     public void handleRubyScriptAnnotation(ScriptingContainer scriptingContainer, RubyScript rubyScriptAnnotation) throws IOException {
@@ -96,6 +64,10 @@ public class JRubyTestObserver {
                     scriptReader,
                     script);
         }
+    }
+
+    public void afterTestClearJRubyInstance(@Observes After afterEvent) {
+        scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(null);
     }
 
 }

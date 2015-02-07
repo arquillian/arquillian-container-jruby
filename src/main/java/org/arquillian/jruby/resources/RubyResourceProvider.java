@@ -1,19 +1,15 @@
 package org.arquillian.jruby.resources;
 
-import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
-import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jruby.Ruby;
+import org.jruby.embed.ScriptingContainer;
 
 import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
 
-public class RubyResourceProvider implements ResourceProvider {
-
-
-    @Inject
-    private Instance<ScopedResources> scopedResourcesInstance;
+public class RubyResourceProvider extends AbstractJRubyResourceProvider implements ResourceProvider {
 
     @Override
     public boolean canProvide(Class<?> type) {
@@ -22,17 +18,19 @@ public class RubyResourceProvider implements ResourceProvider {
 
     @Override
     public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
-        if (qualifiers == null) {
-            scopedResourcesInstance.get().setTestScopedScriptingContainerRequested(true);
-            return scopedResourcesInstance.get().getTestScopedScriptingContainer().getProvider().getRuntime();
-        }
-        for (Annotation qualifier: qualifiers) {
-            if (qualifier.annotationType() == ApplicationScoped.class) {
-                scopedResourcesInstance.get().setClassScopedScriptingContainerRequested(true);
-                return scopedResourcesInstance.get().getClassScopedScriptingContainer().getProvider().getRuntime();
+        try {
+            if (qualifiers == null) {
+                return getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
             }
+            for (Annotation qualifier : qualifiers) {
+                if (qualifier.annotationType() == ApplicationScoped.class) {
+                    return getOrCreateClassScopedScriptingContainer().getProvider().getRuntime();
+                }
+            }
+            return getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
-        scopedResourcesInstance.get().setTestScopedScriptingContainerRequested(true);
-        return scopedResourcesInstance.get().getTestScopedScriptingContainer().getProvider().getRuntime();
     }
+
 }
