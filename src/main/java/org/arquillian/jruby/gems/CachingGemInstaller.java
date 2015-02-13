@@ -67,7 +67,7 @@ public class CachingGemInstaller implements GemInstaller {
     }
 
     @Override
-    public void installGemsFromArchive(Archive archive) throws DeploymentException {
+    public void installGemsFromArchive(Archive<?> archive) throws DeploymentException {
         Map<ArchivePath, File> archiveFiles = uncachedGemInstaller.unpackArchive(archive);
 
         Map<String, File> gemsToInstall = uncachedGemInstaller.getGems(archiveFiles);

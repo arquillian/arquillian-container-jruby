@@ -1,13 +1,12 @@
 package org.arquillian.jruby.resources;
 
+import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
+
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jruby.Ruby;
-import org.jruby.embed.ScriptingContainer;
-
-import java.lang.annotation.Annotation;
-import java.net.MalformedURLException;
 
 public class RubyResourceProvider extends AbstractJRubyResourceProvider implements ResourceProvider {
 

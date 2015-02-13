@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public interface GemInstaller {
 
-    void installGemsFromArchive(Archive archive) throws DeploymentException;
+    void installGemsFromArchive(Archive<?> archive) throws DeploymentException;
 
     void deleteInstallationDirs() throws IOException;
 }

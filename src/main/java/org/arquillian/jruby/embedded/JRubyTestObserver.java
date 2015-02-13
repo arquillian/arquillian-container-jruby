@@ -1,5 +1,8 @@
 package org.arquillian.jruby.embedded;
 
+import java.io.FileReader;
+import java.io.IOException;
+
 import org.arquillian.jruby.api.RubyScript;
 import org.arquillian.jruby.resources.ScopedResources;
 import org.jboss.arquillian.core.api.Instance;
@@ -10,16 +13,7 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.event.suite.After;
 import org.jboss.arquillian.test.spi.event.suite.Before;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
-import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Path;
 
 public class JRubyTestObserver {
 

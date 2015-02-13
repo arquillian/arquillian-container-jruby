@@ -1,9 +1,15 @@
 package org.arquillian.jruby.embedded;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Logger;
+
 import org.arquillian.jruby.gems.CachingGemInstaller;
 import org.arquillian.jruby.gems.GemInstaller;
 import org.arquillian.jruby.gems.UncachedGemInstaller;
-import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -15,14 +21,7 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Logger;
-
-public class JRubyDeployableContainer implements DeployableContainer {
+public class JRubyDeployableContainer implements DeployableContainer<JRubyConfiguration> {
 
     private static final Logger LOG = Logger.getLogger(JRubyDeployableContainer.class.getName());
 
@@ -40,8 +39,8 @@ public class JRubyDeployableContainer implements DeployableContainer {
     }
 
     @Override
-    public void setup(ContainerConfiguration configuration) {
-        this.containerConfig = (JRubyConfiguration) configuration;
+    public void setup(JRubyConfiguration configuration) {
+        this.containerConfig = configuration;
     }
 
     @Override
@@ -76,7 +75,7 @@ public class JRubyDeployableContainer implements DeployableContainer {
     }
 
     @Override
-    public void undeploy(Archive archive) throws DeploymentException {
+    public void undeploy(Archive<?> archive) throws DeploymentException {
 
         try {
             installer.deleteInstallationDirs();
@@ -87,7 +86,7 @@ public class JRubyDeployableContainer implements DeployableContainer {
     }
 
     @Override
-    public ProtocolMetaData deploy(Archive archive) throws DeploymentException {
+    public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         if (installer != null) {
             throw new IllegalStateException("Only one deployment at a time supported.");
         }

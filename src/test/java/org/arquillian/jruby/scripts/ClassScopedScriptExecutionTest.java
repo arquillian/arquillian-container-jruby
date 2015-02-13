@@ -1,6 +1,8 @@
 package org.arquillian.jruby.scripts;
 
 
+import static org.junit.Assert.assertEquals;
+
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
@@ -11,12 +13,9 @@ import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jruby.Ruby;
-import org.jruby.embed.ScriptingContainer;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
 public class ClassScopedScriptExecutionTest {

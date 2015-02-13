@@ -38,7 +38,7 @@ public class UncachedGemInstaller implements GemInstaller {
     }
 
     @Override
-    public void installGemsFromArchive(Archive archive) throws DeploymentException {
+    public void installGemsFromArchive(Archive<?> archive) throws DeploymentException {
 
         Map<ArchivePath, File> archiveFiles = unpackArchive(archive);
 
@@ -63,7 +63,7 @@ public class UncachedGemInstaller implements GemInstaller {
         return ret;
     }
 
-    Map<ArchivePath, File> unpackArchive(Archive archive) throws DeploymentException {
+    Map<ArchivePath, File> unpackArchive(Archive<?> archive) throws DeploymentException {
         Map<ArchivePath, Node> gems = archive.getContent();
         LOG.fine("Installing " + gems.keySet());
 

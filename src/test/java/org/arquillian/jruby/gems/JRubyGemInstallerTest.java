@@ -52,9 +52,6 @@ public class JRubyGemInstallerTest {
     public void shouldDeleteGemTargetDir() throws Exception {
 
         // Given
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class)
-                .addAsResource(asciidoctorGem);
-
         Path targetGemDir = Paths.get("build", "shouldDeleteGemTargetDirGemDir");
         Path targetArchiveDir = Paths.get("build", "shouldDeleteGemTargetDirArchiveDir");
 

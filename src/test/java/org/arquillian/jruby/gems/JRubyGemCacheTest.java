@@ -66,6 +66,7 @@ public class JRubyGemCacheTest {
                 asciidoctorGem);
 
         // When
+        @SuppressWarnings("unused")
         Path cachedGemsDirectory = gemCache.addToCache(gemFiles, Paths.get(originalTestTargetDir.toURI()));
         Path cacheHit = gemCache.getCachedGemDirectory(gemFiles);
 
