@@ -28,7 +28,7 @@ public class JRubyTestObserver {
         scopedResourcesInstanceProducer.set(new ScopedResources());
     }
 
-    // Precedence is -10 so that we are invoked after ResourceProviders are called
+    // Precedence is -10 so that we are invoked after the TestEnricher is called
     // Apply scripts on the requested scripting containers
     public void beforeTestInvokeScript(@Observes(precedence = -10) Before beforeEvent) throws IOException {
         ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer() != null

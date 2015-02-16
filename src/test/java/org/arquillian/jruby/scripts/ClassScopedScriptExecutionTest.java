@@ -1,14 +1,11 @@
 package org.arquillian.jruby.scripts;
 
 
-import static org.junit.Assert.assertEquals;
-
+import org.arquillian.jruby.api.RubyResource;
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -16,6 +13,8 @@ import org.jruby.Ruby;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
 public class ClassScopedScriptExecutionTest {
@@ -29,8 +28,7 @@ public class ClassScopedScriptExecutionTest {
     // In contrast to TestScopedScriptExecutionTest this ScriptingContainer is
     // Test class scoped, so that the value of @a is not lost between
     // the two test methods
-    @ArquillianResource
-    @ApplicationScoped
+    @RubyResource
     private Ruby ruby;
 
     @Test

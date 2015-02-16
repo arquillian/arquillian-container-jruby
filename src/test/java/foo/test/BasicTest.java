@@ -1,16 +1,15 @@
 package foo.test;
 
+import org.arquillian.jruby.api.RubyResource;
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jruby.Ruby;
-import org.jruby.embed.ScriptingContainer;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
@@ -24,12 +23,6 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class BasicTest {
-
-    @ArquillianResource
-    private Ruby rubyInstance;
-
-    @ArquillianResource
-    private ScriptingContainer scriptingContainer;
 
     @Deployment
     public static GenericArchive deploy() throws Exception {
@@ -46,7 +39,7 @@ public class BasicTest {
     private static Ruby lastRubyInstance;
 
     @Test
-    public void shouldExecuteSimpleRubyStatement() throws Exception {
+    public void shouldExecuteSimpleRubyStatement(@RubyResource Ruby rubyInstance) throws Exception {
 
         assertNotSame(lastRubyInstance, rubyInstance);
         lastRubyInstance = rubyInstance;
@@ -60,7 +53,7 @@ public class BasicTest {
 
     @Test
     @RubyScript("requireasciidoctor.rb")
-    public void shouldApplyScriptBeforeTest() throws Exception {
+    public void shouldApplyScriptBeforeTest(@RubyResource Ruby rubyInstance) throws Exception {
         assertNotSame(lastRubyInstance, rubyInstance);
         lastRubyInstance = rubyInstance;
 

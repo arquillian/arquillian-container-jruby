@@ -11,7 +11,7 @@ repositories {
 version = '1.0'
 
 ext {
-    version_arquillian          = '1.1.6.Final'
+    version_arquillian          = '1.1.7.Final'
     version_shrinkwrap_resolver = '2.1.1'
     version_junit               = '4.12'
     version_hamcrest            = '1.3'
@@ -31,6 +31,7 @@ configurations {
 dependencies {
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-spi', version: version_arquillian
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-spi', version: version_arquillian
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-impl-base', version: version_arquillian
     compile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
     testCompile group: 'org.jboss.arquillian.junit', name: 'arquillian-junit-container', version: version_arquillian

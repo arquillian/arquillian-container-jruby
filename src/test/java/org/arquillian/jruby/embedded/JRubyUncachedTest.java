@@ -1,12 +1,6 @@
 package org.arquillian.jruby.embedded;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.File;
-import java.net.URL;
-
+import org.arquillian.jruby.api.RubyResource;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -18,10 +12,17 @@ import org.jruby.Ruby;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.net.URL;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 @RunWith(Arquillian.class)
 public class JRubyUncachedTest {
 
-    @ArquillianResource
+    @RubyResource
     private Ruby rubyInstance;
 
     @ArquillianResource

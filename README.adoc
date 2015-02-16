@@ -11,6 +11,7 @@ The following example shows a simple test that uses http://asciidoctor.org[Ascii
 ----
 package foo.test;
 
+import org.arquillian.jruby.api.RubyResource;
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,10 +37,10 @@ import static org.junit.Assert.assertThat;
 @RunWith(Arquillian.class)
 public class BasicTest {
 
-    @ArquillianResource // <1>
+    @RubyResource // <1>
     private Ruby rubyInstance;
 
-    @ArquillianResource // <1>
+    @RubyResource // <1>
     private ScriptingContainer scriptingContainer;
 
     @Deployment
@@ -66,25 +67,25 @@ public class BasicTest {
 
     @Test
     @RubyScript("requireasciidoctor.rb") // <3>
-    public void shouldApplyScriptBeforeTest() throws Exception {
+    public void shouldApplyScriptBeforeTest(@RubyResource Ruby rubyInstanceForTestMethod) throws Exception { // <4>
 
-        IRubyObject result = rubyInstance.evalScriptlet(
+        IRubyObject result = rubyInstanceForTestMethod.evalScriptlet(
                 "Asciidoctor.convert '*This* is Asciidoctor.'");
         assertThat(
-                (String)JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
+                (String)JavaEmbedUtils.rubyToJava(rubyInstanceForTestMethod, result, String.class),
                 containsString("<strong>This</strong> is Asciidoctor."));
 
     }
 }
 ----
-<1> `Ruby` and `ScriptingContainer` instances are by default created and injected per test, so that every method will get its own instance.
-    To share an instance in all test methods add `@ApplicationScoped`.
+<1> Fields of type `Ruby` and `ScriptingContainer` instances annotated with `@RubyResource` are injected by the container.
+    All test methods will see the same instances, that is the fields are injected once for the whole test class.
 <2> Gems can be resolved via the Maven resolver.
     Gem files are automatically installed in a temporary location by the container adapter and are available to the injected Ruby runtime.
-<3> The script declared by the `@RubyScript` annotation is executed on the injected Ruby instance before the test.
+<3> The script declared by the `@RubyScript` annotation is executed on the `rubyInstanceForTestMethod` before the test.
     Here the script added to the deployment requires the asciidoctor gem and there makes invoking Asciidoctor possible.
-    The annotation can also be defined on the test class.
-    In this case first the scripts of the test class are executed before the scripts of the test method for each test method.
+<4> If a parameter to a test method is annotated with `@RubyResource` an own test method scoped instance is created for the test and passed.
+    This is useful to have dedicated, clean Ruby instances per test.
 
 == Gem installation
 
@@ -112,16 +113,21 @@ The following `arquillian.xml` will make the adapter cache gems:
 == Resource Injection
 
 The container adapter knows to inject JRuby `ScriptingContainer` and `Ruby` instances.
-By default an own instance per test method will be injected.
-By adding the annotation `@org.jboss.arquillian.core.api.annotation.ApplicationScoped` to an `@ArquillianResource` you will get one instance for the whole test class.
+It will handle all fields and test method parameters that are annotated with `@org.arquillian.jruby.api.RubyResource`.
 
+Fields are injected once per test class so that all test methods share the same Ruby instance if they rely on the injected field.
+
+Method parameters always get a new clean instance.
 
 == Script execution
 
 It is possible to apply scripts from the deployment archive before the test on the injected resources.
-Therefore define the annotation `org.arquillian.jruby.api.RubyScript` on the test class or the test method.
+Therefore define the annotation `@org.arquillian.jruby.api.RubyScript` on the test class or the test method.
 The annotation gets a list of ArchivePath names that must exist in the result of the deployment method.
-Scripts defined in annotations on the class are defined before those of the test method.
+Scripts defined in annotations on the class are executed before those of the test method.
 
-If the test has an injected `ScriptingContainer` or `Ruby` instance per test method the scripts are executed on this `ScriptingContainer`.
+Script annotations on the test class are handled before execution of _every_ test method.
+After that script annotations on the test method are handled.
+
+If the test method has an injected `ScriptingContainer` or `Ruby` as a method parameter.
 Otherwise they are executed on the `ScriptingContainer` created for the test class.
