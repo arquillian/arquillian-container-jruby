@@ -11,6 +11,7 @@ import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.event.suite.After;
+import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.arquillian.test.spi.event.suite.Before;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jruby.embed.ScriptingContainer;
@@ -61,7 +62,19 @@ public class JRubyTestObserver {
     }
 
     public void afterTestClearJRubyInstance(@Observes After afterEvent) {
+        ScriptingContainer testScopedScriptingContainer = scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer();
+        if (testScopedScriptingContainer != null) {
+            testScopedScriptingContainer.terminate();
+        }
         scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(null);
+    }
+
+    public void afterTestClassCleanJRubyInstance(@Observes AfterClass afterClassEvent) {
+        ScriptingContainer classScopedScriptingContainer = scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
+        if (classScopedScriptingContainer != null) {
+            classScopedScriptingContainer.terminate();
+        }
+        scopedResourcesInstanceProducer.get().setClassScopedScriptingContainer(null);
     }
 
 }
