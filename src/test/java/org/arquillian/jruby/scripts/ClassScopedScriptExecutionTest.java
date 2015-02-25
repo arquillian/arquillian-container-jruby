@@ -22,7 +22,8 @@ public class ClassScopedScriptExecutionTest {
     @Deployment
     public static GenericArchive deploy() throws Exception {
         return ShrinkWrap.create(GenericArchive.class)
-                .add(new StringAsset("puts \">>>#{@a}\"\n@a = @a ? @a + 1 : 1\n"), "testscript.rb");
+                .add(new StringAsset("@a=1\n"), "testscript1.rb")
+                .add(new StringAsset("@a=@a+1\n"), "testscript2.rb");
     }
 
     // In contrast to TestScopedScriptExecutionTest this ScriptingContainer is
@@ -33,14 +34,14 @@ public class ClassScopedScriptExecutionTest {
 
     @Test
     @InSequence(1)
-    @RubyScript("testscript.rb")
+    @RubyScript("testscript1.rb")
     public void firstTest() {
         assertEquals(1L, JavaEmbedUtils.rubyToJava(ruby.evalScriptlet("@a")));
     }
 
     @Test
     @InSequence(2)
-    @RubyScript("testscript.rb")
+    @RubyScript("testscript2.rb")
     public void secondTest() {
         assertEquals(2L, JavaEmbedUtils.rubyToJava(ruby.evalScriptlet("@a")));
     }

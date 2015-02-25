@@ -1,8 +1,5 @@
 package org.arquillian.jruby.embedded;
 
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.arquillian.jruby.api.RubyScript;
 import org.arquillian.jruby.resources.ScopedResources;
 import org.jboss.arquillian.core.api.Instance;
@@ -15,6 +12,9 @@ import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.arquillian.test.spi.event.suite.Before;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jruby.embed.ScriptingContainer;
+
+import java.io.FileReader;
+import java.io.IOException;
 
 public class JRubyTestObserver {
 
@@ -32,9 +32,7 @@ public class JRubyTestObserver {
     // Precedence is -10 so that we are invoked after the TestEnricher is called
     // Apply scripts on the requested scripting containers
     public void beforeTestInvokeScript(@Observes(precedence = -10) Before beforeEvent) throws IOException {
-        ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer() != null
-                ? scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer()
-                : scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
+        ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
 
         if (scriptingContainer != null) {
             handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestClass().getAnnotation(RubyScript.class));

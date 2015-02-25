@@ -1,6 +1,7 @@
 package org.arquillian.jruby.resources;
 
 import org.arquillian.jruby.api.RubyResource;
+import org.arquillian.jruby.api.RubyScript;
 import org.arquillian.jruby.embedded.JRubyTemporaryDir;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
@@ -9,6 +10,8 @@ import org.jruby.Ruby;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -60,19 +63,31 @@ public class RubyResourceProvider implements TestEnricher {
     public Object[] resolve(Method method) {
         Object[] values = new Object[method.getParameterTypes().length];
         Class<?>[] parameterTypes = method.getParameterTypes();
+        ScriptingContainer scriptingContainer = null;
         for(int i = 0; i < parameterTypes.length; i++) {
 
             RubyResource resource = getResourceAnnotation(method.getParameterAnnotations()[i]);
             if (resource != null) {
                 try {
                     if (parameterTypes[i] == Ruby.class) {
-                        values[i] = getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
+                        scriptingContainer = getOrCreateTestMethodScopedScriptingContainer();
+                        values[i] = scriptingContainer.getProvider().getRuntime();
                     } else if (parameterTypes[i] == ScriptingContainer.class) {
-                        values[i] = getOrCreateTestMethodScopedScriptingContainer();
+                        scriptingContainer = getOrCreateTestMethodScopedScriptingContainer();
+                        values[i] = scriptingContainer;
                     } else {
                         throw new RuntimeException("Unsupported RubyResource field type " + parameterTypes[i]);
                     }
                 } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (scriptingContainer != null) {
+                try {
+                    handleRubyScriptAnnotation(scriptingContainer, method.getDeclaringClass().getAnnotation(RubyScript.class));
+                    handleRubyScriptAnnotation(scriptingContainer, method.getAnnotation(RubyScript.class));
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -108,6 +123,25 @@ public class RubyResourceProvider implements TestEnricher {
                                 temporaryDirInstance.get().getTempArchiveDir().toUri().toURL()}));
 
         return scriptingContainer;
+    }
+
+    public void handleRubyScriptAnnotation(ScriptingContainer scriptingContainer, RubyScript rubyScriptAnnotation) throws IOException {
+        if (rubyScriptAnnotation != null) {
+            String[] scripts = rubyScriptAnnotation.value();
+            if (scripts != null) {
+                for (String script : scripts) {
+                    applyScript(scriptingContainer, script);
+                }
+            }
+        }
+    }
+
+    private void applyScript(ScriptingContainer scriptingContainer, String script) throws IOException {
+        try (FileReader scriptReader = new FileReader(temporaryDirInstance.get().getTempArchiveDir().resolve(script).toAbsolutePath().toFile())) {
+            scriptingContainer.runScriptlet(
+                    scriptReader,
+                    script);
+        }
     }
 
     protected RubyResource getResourceAnnotation(Annotation[] annotations) {
