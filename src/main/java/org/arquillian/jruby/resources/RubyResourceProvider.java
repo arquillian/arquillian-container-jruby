@@ -36,9 +36,9 @@ public class RubyResourceProvider implements TestEnricher {
                 Annotation[] qualifiers = filterAnnotations(field.getAnnotations());
                 // null value will throw exception in lookup
                 if (field.getType() == Ruby.class) {
-                    value = getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
+                    value = getOrCreateClassScopedScriptingContainer().getProvider().getRuntime();
                 } else if (field.getType() == ScriptingContainer.class) {
-                    value = getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
+                    value = getOrCreateClassScopedScriptingContainer();
                 } else {
                     throw new RuntimeException("Unsupported RubyResource field type " + field.getType());
                 }
@@ -68,7 +68,7 @@ public class RubyResourceProvider implements TestEnricher {
                     if (parameterTypes[i] == Ruby.class) {
                         values[i] = getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
                     } else if (parameterTypes[i] == ScriptingContainer.class) {
-                        values[i] = getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
+                        values[i] = getOrCreateTestMethodScopedScriptingContainer();
                     } else {
                         throw new RuntimeException("Unsupported RubyResource field type " + parameterTypes[i]);
                     }
