@@ -1,0 +1,100 @@
+import java.text.SimpleDateFormat
+
+Date buildTimeAndDate = new Date()
+
+ext {
+    buildTime = new SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+    buildDate = new SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+}
+
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+def projectArtifactId = 'arquillian-container-jruby'
+
+jar {
+    manifest {
+        attributes(
+            'Built-By': System.properties['user.name'],
+            'Created-By': System.properties['java.version'] + " (" + System.properties['java.vendor'] + " " + System.getProperty("java.vm.version") + ")",
+            'Build-Date': project.buildTime,
+            'Build-Time': project.buildDate,
+            'Specification-Title': projectArtifactId,
+            'Specification-Version': project.version,
+            'Specification-Vendor': 'asciidoctor.org',
+            'Implementation-Title': projectArtifactId,
+            'Implementation-Version': project.version,
+            'Implementation-Vendor': 'asciidoctor.org'
+        )
+    }
+}
+
+task sourceJar(type: Jar) {
+    group 'Build'
+    description 'An archive of the source code'
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    sourceJar
+}
+
+def pomConfig = {
+    name projectArtifactId
+    description 'An Arquillian container adapter that deploys to a JRuby runtime'
+    url 'http://arquillian.org'
+    inceptionYear '2015'
+    licenses {
+        license([:]) {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+        }
+    }
+    scm {
+        url 'https://github.com/robertpanzer/arquillian-container-jruby'
+    }
+    developers {
+        developer {
+            id 'bobbytank42'
+            name 'Robert Panzer'
+            roles {
+                role 'Developer'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenCustom(MavenPublication) {
+            from components.java
+            artifact sourceJar
+            setGroupId 'org.arquillian.jruby'
+            setArtifactId(projectArtifactId)
+            pom.withXml {
+                asNode().children().last() + pomConfig
+            }
+        }
+    }
+}
+
+task install(dependsOn: publishToMavenLocal)
+
+if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = ''
+if (!project.hasProperty('bintrayApiKey')) ext.bintrayApiKey = ''
+
+bintray {
+    user = project.bintrayUsername
+    key = project.bintrayApiKey
+    publications = ['mavenCustom']
+    pkg {
+        repo = 'maven'
+        userOrg = 'bobbytank42'
+        name = projectArtifactId
+        desc = pomConfig.description
+        licenses = ['Apache-2.0']
+        labels = ['arquillian', 'jruby']
+    }
+}

@@ -1,4 +1,16 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5"
+    }
+}
+
 apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply from: 'gradle/publish.gradle'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -8,7 +20,7 @@ repositories {
     maven { url 'http://rubygems-proxy.torquebox.org/releases' }
 }
 
-version = '1.0'
+version = '1.0.0.Alpha1-SNAPSHOT'
 
 ext {
     version_arquillian          = '1.1.7.Final'
