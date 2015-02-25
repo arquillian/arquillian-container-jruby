@@ -38,13 +38,15 @@ repositories {
 
 configurations {
     testgems
+    provided
 }
 
 dependencies {
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-spi', version: version_arquillian
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-spi', version: version_arquillian
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-impl-base', version: version_arquillian
-    compile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
+
+    provided group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
     testCompile group: 'org.jboss.arquillian.junit', name: 'arquillian-junit-container', version: version_arquillian
     testCompile group: 'org.jboss.shrinkwrap.resolver', name: 'shrinkwrap-resolver-depchain', version: version_shrinkwrap_resolver
@@ -52,15 +54,21 @@ dependencies {
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
     testCompile group: 'commons-io', name: 'commons-io', version: version_commons_io
     testCompile group: 'org.mockito', name: 'mockito-all', version: version_mockito
+    testCompile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
     testgems group: 'rubygems', name: 'asciidoctor', version: '1.5.2'
 }
 
 
+compileJava {
+    classpath += configurations.provided
+}
+
 test {
 
     filter {
         includeTestsMatching 'org.arquillian.jruby.gems.*'
+        includeTestsMatching 'org.arquillian.jruby.scripts.*'
     }
 
 }
