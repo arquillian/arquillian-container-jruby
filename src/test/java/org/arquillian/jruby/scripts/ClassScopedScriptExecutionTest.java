@@ -10,11 +10,15 @@ import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
 import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class ClassScopedScriptExecutionTest {
@@ -46,4 +50,9 @@ public class ClassScopedScriptExecutionTest {
         assertEquals(2L, JavaEmbedUtils.rubyToJava(ruby.evalScriptlet("@a")));
     }
 
+    @Test
+    @InSequence(3)
+    public void shouldFindTestResourceWithNonIsolatedClassLoader() {
+        assertThat(ruby.evalScriptlet("require 'test.rb'"), is((IRubyObject) RubyBoolean.newBoolean(ruby, true)));
+    }
 }

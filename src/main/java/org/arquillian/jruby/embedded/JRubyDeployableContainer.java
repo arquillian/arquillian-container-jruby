@@ -33,6 +33,10 @@ public class JRubyDeployableContainer implements DeployableContainer<JRubyConfig
     @ApplicationScoped
     private InstanceProducer<JRubyTemporaryDir> temporaryDirInstanceProducer;
 
+    @Inject
+    @ApplicationScoped
+    private InstanceProducer<JRubyConfiguration> containerConfiguration;
+
     @Override
     public Class<JRubyConfiguration> getConfigurationClass() {
         return JRubyConfiguration.class;
@@ -41,6 +45,7 @@ public class JRubyDeployableContainer implements DeployableContainer<JRubyConfig
     @Override
     public void setup(JRubyConfiguration configuration) {
         this.containerConfig = configuration;
+        containerConfiguration.set(configuration);
     }
 
     @Override

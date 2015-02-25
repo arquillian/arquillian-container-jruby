@@ -4,10 +4,19 @@
             xsi:schemaLocation="http://www.jboss.org/schema/arquillian http://www.jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
     <container qualifier="jrubyUncached" default="true">
+        <configuration>
+            <property name="isolatedClassloader">false</property>
+        </configuration>
     </container>
     <container qualifier="jrubyCached">
         <configuration>
             <property name="gemDir">build/cachedtestgems</property>
+            <property name="isolatedClassloader">false</property>
+        </configuration>
+    </container>
+    <container qualifier="isolated">
+        <configuration>
+            <property name="isolatedClassloader">true</property>
         </configuration>
     </container>
 

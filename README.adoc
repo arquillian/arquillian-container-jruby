@@ -131,3 +131,27 @@ After that script annotations on the test method are handled.
 
 If the test method has an injected `ScriptingContainer` or `Ruby` as a method parameter.
 Otherwise they are executed on the `ScriptingContainer` created for the test class.
+
+== Ruby resource loading
+
+By default the load path of the scripting container and the classloader is set to only load from the archive contents and the installed gems.
+Therefore resources or test resources from the project are not available to the Ruby runtime unless you add them to the archive.
+
+If your project already installs gems at build time it can make sense to do without this isolation and use the test classloader.
+This can be configured in the container configuration using the property `isolatedClassloader`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.jboss.org/schema/arquillian http://www.jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <container qualifier="isolated">
+        <configuration>
+            <property name="isolatedClassloader">true</property>
+        </configuration>
+    </container>
+
+</arquillian>
+----

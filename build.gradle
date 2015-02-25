@@ -45,6 +45,7 @@ dependencies {
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-spi', version: version_arquillian
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-spi', version: version_arquillian
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-impl-base', version: version_arquillian
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-impl-base', version: version_arquillian
 
     provided group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
@@ -92,5 +93,16 @@ task integrationTestCached(type: Test) {
 
 }
 
+task integrationTestIsolatedClassloader(type: Test) {
+
+    systemProperty 'arquillian.launch', 'isolated'
+    filter {
+        includeTestsMatching '*.JRubyIsolatedClassloaderTest'
+    }
+
+}
+
 check.dependsOn integrationTestUncached
 check.dependsOn integrationTestCached
+check.dependsOn integrationTestIsolatedClassloader
+
