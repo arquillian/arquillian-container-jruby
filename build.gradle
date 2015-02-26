@@ -1,16 +1,17 @@
 buildscript {
     repositories {
-        mavenLocal()
         jcenter()
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5"
+        classpath "io.spring.gradle:dependency-management-plugin:0.4.0.RELEASE"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply from: 'gradle/publish.gradle'
+apply plugin: 'io.spring.dependency-management'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -24,7 +25,6 @@ version = '1.0.0.Alpha1-SNAPSHOT'
 
 ext {
     version_arquillian          = '1.1.7.Final'
-    version_shrinkwrap_resolver = '2.1.1'
     version_junit               = '4.12'
     version_hamcrest            = '1.3'
     version_jruby               = '1.7.18'
@@ -41,16 +41,25 @@ configurations {
     provided
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "org.jboss.arquillian:arquillian-bom:${version_arquillian}"
+    }
+    generatedPomCustomization {
+        importedBomAction = 'copy'
+    }
+}
+
 dependencies {
-    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-spi', version: version_arquillian
-    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-spi', version: version_arquillian
-    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-impl-base', version: version_arquillian
-    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-impl-base', version: version_arquillian
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-spi'
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-spi'
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-impl-base'
+    compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-impl-base'
 
-    provided group: 'org.jruby', name: 'jruby-complete', version: version_jruby
+    compile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
-    testCompile group: 'org.jboss.arquillian.junit', name: 'arquillian-junit-container', version: version_arquillian
-    testCompile group: 'org.jboss.shrinkwrap.resolver', name: 'shrinkwrap-resolver-depchain', version: version_shrinkwrap_resolver
+    testCompile group: 'org.jboss.arquillian.junit', name: 'arquillian-junit-container'
+    testCompile group: 'org.jboss.shrinkwrap.resolver', name: 'shrinkwrap-resolver-depchain'
     testCompile group: 'junit', name: 'junit', version: version_junit
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
     testCompile group: 'commons-io', name: 'commons-io', version: version_commons_io
