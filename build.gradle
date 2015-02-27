@@ -21,7 +21,7 @@ repositories {
     maven { url 'http://rubygems-proxy.torquebox.org/releases' }
 }
 
-version = '1.0.0.Alpha1-SNAPSHOT'
+version = '1.0.0.Alpha1'
 
 ext {
     version_arquillian          = '1.1.7.Final'
@@ -56,7 +56,7 @@ dependencies {
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-impl-base'
     compile group: 'org.jboss.arquillian.container', name: 'arquillian-container-test-impl-base'
 
-    compile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
+    provided group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
     testCompile group: 'org.jboss.arquillian.junit', name: 'arquillian-junit-container'
     testCompile group: 'org.jboss.shrinkwrap.resolver', name: 'shrinkwrap-resolver-depchain'
