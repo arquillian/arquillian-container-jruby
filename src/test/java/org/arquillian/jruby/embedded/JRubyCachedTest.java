@@ -1,6 +1,5 @@
 package org.arquillian.jruby.embedded;
 
-import org.arquillian.jruby.api.RubyResource;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(Arquillian.class)
 public class JRubyCachedTest {
 
-    @RubyResource
+    @ArquillianResource
     private Ruby rubyInstance;
 
     @ArquillianResource

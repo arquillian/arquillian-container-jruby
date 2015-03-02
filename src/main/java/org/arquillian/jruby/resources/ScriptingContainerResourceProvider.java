@@ -3,34 +3,33 @@ package org.arquillian.jruby.resources;
 import org.arquillian.jruby.embedded.JRubyScriptExecution;
 import org.arquillian.jruby.util.AnnotationUtils;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
-import org.jruby.Ruby;
+import org.jruby.embed.ScriptingContainer;
 
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 
-public class RubyResourceProvider extends AbstractResourceProvider {
+public class ScriptingContainerResourceProvider extends AbstractResourceProvider {
 
     @Override
     public boolean canProvide(Class<?> aClass) {
-        return aClass == Ruby.class;
+        return aClass == ScriptingContainer.class;
     }
 
     @Override
     public Object lookup(ArquillianResource arquillianResource, Annotation... annotations) {
-        Ruby ruby;
+        ScriptingContainer scriptingContainer;
 
         try {
-            if (AnnotationUtils.filterAnnotation(annotations, ResourceProvider.MethodInjection.class) != null) {
-                ruby = getOrCreateTestMethodScopedScriptingContainer().getProvider().getRuntime();
+            if (AnnotationUtils.filterAnnotation(annotations, MethodInjection.class) != null) {
+                scriptingContainer = getOrCreateTestMethodScopedScriptingContainer();
                 rubyScriptExecutionEvent.fire(new JRubyScriptExecution());
-            } else if (AnnotationUtils.filterAnnotation(annotations, ResourceProvider.ClassInjection.class) != null) {
-                ruby = getOrCreateClassScopedScriptingContainer().getProvider().getRuntime();
+            } else if (AnnotationUtils.filterAnnotation(annotations, ClassInjection.class) != null) {
+                scriptingContainer = getOrCreateClassScopedScriptingContainer();
             } else {
                 throw new IllegalArgumentException("Don't know how to resolve Ruby instance with qualifiers " + Arrays.asList(annotations));
             }
-            return ruby;
+            return scriptingContainer;
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

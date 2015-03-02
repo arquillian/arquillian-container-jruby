@@ -2,6 +2,7 @@ package org.arquillian.jruby.embedded;
 
 import org.arquillian.jruby.api.RubyScript;
 import org.arquillian.jruby.resources.ScopedResources;
+import org.jboss.arquillian.core.api.Event;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
@@ -25,18 +26,40 @@ public class JRubyTestObserver {
     @Inject
     private Instance<JRubyTemporaryDir> temporaryDirInstance;
 
+    @Inject
+    private Event<JRubyScriptExecution> rubyScriptExecutionEvent;
+
     public void beforeClass(@Observes BeforeClass beforeClass) throws IOException {
         scopedResourcesInstanceProducer.set(new ScopedResources());
     }
 
-    // Precedence is -10 so that we are invoked after the TestEnricher is called
+    // Precedence is -10 so that we are invoked after the ResourceProvider that enriches the test class
+    // is called.
     // Apply scripts on the requested scripting containers
-    public void beforeTestInvokeScript(@Observes(precedence = -10) Before beforeEvent) throws IOException {
-        ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
+    public void beforeTestMethod(@Observes(precedence = -10) Before before) throws IOException {
+        scopedResourcesInstanceProducer.get().setTestMethod(before.getTestMethod());
 
-        if (scriptingContainer != null) {
-            handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestClass().getAnnotation(RubyScript.class));
-            handleRubyScriptAnnotation(scriptingContainer, beforeEvent.getTestMethod().getAnnotation(RubyScript.class));
+        if (!scopedResourcesInstanceProducer.get().isTestMethodUsingParameterInjectedRubyResource()) {
+            rubyScriptExecutionEvent.fire(new JRubyScriptExecution());
+        }
+    }
+
+    // Event is either thrown by JRubyTestObserver#beforeTestMethod if scripts should be executed on
+    // class scoped Ruby instance or by ResourceProvider#lookup if scripts should be executed
+    // on test method scoped Ruby instance.
+    public void executeScript(@Observes JRubyScriptExecution scriptExecution) throws IOException {
+        if (!scopedResourcesInstanceProducer.get().isScriptsExecutedOnTest()) {
+            scopedResourcesInstanceProducer.get().setScriptsExecutedOnTest(true);
+            ScriptingContainer scriptingContainer = scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer();
+
+            if (scriptingContainer == null) {
+                scriptingContainer = scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
+            }
+
+            if (scriptingContainer != null) {
+                handleRubyScriptAnnotation(scriptingContainer, scopedResourcesInstanceProducer.get().getTestMethod().getAnnotation(RubyScript.class));
+                handleRubyScriptAnnotation(scriptingContainer, scopedResourcesInstanceProducer.get().getTestMethod().getDeclaringClass().getAnnotation(RubyScript.class));
+            }
         }
     }
 
@@ -65,6 +88,7 @@ public class JRubyTestObserver {
             testScopedScriptingContainer.terminate();
         }
         scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(null);
+        scopedResourcesInstanceProducer.get().setScriptsExecutedOnTest(false);
     }
 
     public void afterTestClassCleanJRubyInstance(@Observes AfterClass afterClassEvent) {
@@ -74,5 +98,6 @@ public class JRubyTestObserver {
         }
         scopedResourcesInstanceProducer.get().setClassScopedScriptingContainer(null);
     }
+
 
 }

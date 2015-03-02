@@ -1,11 +1,11 @@
 package org.arquillian.jruby.scripts;
 
 
-import org.arquillian.jruby.api.RubyResource;
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -27,14 +27,14 @@ public class TestScopedScriptExecutionTest {
     @Test
     @InSequence(1)
     @RubyScript("testscript.rb")
-    public void firstTest(@RubyResource ScriptingContainer scriptingContainer) {
+    public void firstTest(@ArquillianResource ScriptingContainer scriptingContainer) {
         assertEquals(1L, scriptingContainer.runScriptlet("@a"));
     }
 
     @Test
     @InSequence(1)
     @RubyScript("testscript.rb")
-    public void secondTest(@RubyResource ScriptingContainer scriptingContainer) {
+    public void secondTest(@ArquillianResource ScriptingContainer scriptingContainer) {
         assertEquals(1L, scriptingContainer.runScriptlet("@a"));
     }
 
