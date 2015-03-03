@@ -48,7 +48,7 @@ public class BasicTest {
         File asciidoctorGem = Maven.configureResolver() // <2>
                 .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
                 .resolve("rubygems:asciidoctor:gem:1.5.2")
-                .withTransitivity().asSingleFile();
+                .withoutTransitivity().asSingleFile();
 
         return ShrinkWrap.create(GenericArchive.class)
                 .add(new FileAsset(asciidoctorGem), asciidoctorGem.getName())

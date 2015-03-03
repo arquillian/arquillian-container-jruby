@@ -22,7 +22,7 @@ public class JRubyGemCacheTest {
     @BeforeClass
     public static void resolveAsciidoctorGem() {
         asciidoctorGem = Maven.configureResolver().withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
-                .resolve("rubygems:asciidoctor:gem:1.5.2").withTransitivity().asFile()[0];
+                .resolve("rubygems:asciidoctor:gem:1.5.2").withoutTransitivity().asSingleFile();
     }
 
     @Test
