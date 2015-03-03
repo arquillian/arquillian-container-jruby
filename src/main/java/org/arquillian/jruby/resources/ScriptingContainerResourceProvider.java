@@ -1,15 +1,21 @@
 package org.arquillian.jruby.resources;
 
-import org.arquillian.jruby.embedded.JRubyScriptExecution;
 import org.arquillian.jruby.util.AnnotationUtils;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jruby.embed.ScriptingContainer;
 
 import java.lang.annotation.Annotation;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 
-public class ScriptingContainerResourceProvider extends AbstractResourceProvider {
+public class ScriptingContainerResourceProvider implements ResourceProvider {
+
+    @Inject
+    @ApplicationScoped
+    protected Instance<ScopedResources> scopedResourcesInstance;
 
     @Override
     public boolean canProvide(Class<?> aClass) {
@@ -18,20 +24,13 @@ public class ScriptingContainerResourceProvider extends AbstractResourceProvider
 
     @Override
     public Object lookup(ArquillianResource arquillianResource, Annotation... annotations) {
-        ScriptingContainer scriptingContainer;
 
-        try {
-            if (AnnotationUtils.filterAnnotation(annotations, MethodInjection.class) != null) {
-                scriptingContainer = getOrCreateTestMethodScopedScriptingContainer();
-                rubyScriptExecutionEvent.fire(new JRubyScriptExecution());
-            } else if (AnnotationUtils.filterAnnotation(annotations, ClassInjection.class) != null) {
-                scriptingContainer = getOrCreateClassScopedScriptingContainer();
-            } else {
-                throw new IllegalArgumentException("Don't know how to resolve Ruby instance with qualifiers " + Arrays.asList(annotations));
-            }
-            return scriptingContainer;
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+        if (AnnotationUtils.filterAnnotation(annotations, ResourceProvider.MethodInjection.class) != null) {
+            return scopedResourcesInstance.get().getTestScopedScriptingContainer();
+        } else if (AnnotationUtils.filterAnnotation(annotations, ResourceProvider.ClassInjection.class) != null) {
+            return scopedResourcesInstance.get().getClassScopedScriptingContainer();
+        } else {
+            throw new IllegalArgumentException("Don't know how to resolve ScriptingContainer instance with qualifiers " + Arrays.asList(annotations));
         }
     }
 }

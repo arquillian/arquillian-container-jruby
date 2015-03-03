@@ -1,4 +1,4 @@
-package org.arquillian.jruby.resources;
+package org.arquillian.jruby.embedded;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
