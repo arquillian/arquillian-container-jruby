@@ -47,14 +47,30 @@ public class JRubyTestObserver {
 
     private static final Logger LOG = Logger.getLogger(RubyResourceProvider.class.getName());
 
-
-    public void beforeClass(@Observes BeforeClass beforeClass) throws IOException {
+    public void createScopedResources(@Observes(precedence = 1000) BeforeClass beforeClass) {
         scopedResourcesInstanceProducer.set(new ScopedResources());
+    }
+
+    public void checkCreateClassBasedScriptingContainer(@Observes(precedence = 100) BeforeClass beforeClass) {
 
         if (isTestClassRequiringScriptingContainer(beforeClass.getTestClass().getJavaClass())) {
+            scopedResourcesInstanceProducer.get().setCreateTestClassBasedScriptingContainer();
+        }
+    }
+
+    public void beforeClass(@Observes BeforeClass beforeClass) throws IOException {
+
+        if (scopedResourcesInstanceProducer.get().isCreateTestClassBasedScriptingContainer()) {
             scopedResourcesInstanceProducer.get().setClassScopedScriptingContainer(createScriptingContainer());
         }
 
+    }
+
+    public void checkCreateTestMethodBasedScriptingContainer(@Observes(precedence = 100) Before before) {
+
+        if (isTestMethodUsingParameterInjectedRubyResource(before.getTestMethod())) {
+            scopedResourcesInstanceProducer.get().setCreateTestMethodBasedScriptingContainer();
+        }
     }
 
     // Precedence is 10 so that we are invoked before the ResourceProvider that enriches the test class
@@ -62,7 +78,7 @@ public class JRubyTestObserver {
     // Apply scripts on the requested scripting containers
     public void beforeTestMethodCreateScriptingContainer(@Observes(precedence = 10) Before before) throws IOException {
 
-        if (isTestMethodUsingParameterInjectedRubyResource(before.getTestMethod())) {
+        if (scopedResourcesInstanceProducer.get().isCreateTestMethodBasedScriptingContainer()) {
             scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(createScriptingContainer());
         }
 

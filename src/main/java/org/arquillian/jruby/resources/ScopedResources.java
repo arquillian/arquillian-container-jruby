@@ -8,6 +8,9 @@ public class ScopedResources {
 
     private ScriptingContainer testScopedScriptingContainer;
 
+    private boolean createTestClassBasedScriptingContainer;
+    private boolean createTestMethodBasedScriptingContainer;
+
     public void setClassScopedScriptingContainer(ScriptingContainer classScopedScriptingContainer) {
         this.classScopedScriptingContainer = classScopedScriptingContainer;
     }
@@ -24,4 +27,19 @@ public class ScopedResources {
         return testScopedScriptingContainer;
     }
 
+    public void setCreateTestClassBasedScriptingContainer() {
+        this.createTestClassBasedScriptingContainer = true;
+    }
+
+    public boolean isCreateTestClassBasedScriptingContainer() {
+        return createTestClassBasedScriptingContainer;
+    }
+
+    public void setCreateTestMethodBasedScriptingContainer() {
+        this.createTestMethodBasedScriptingContainer = true;
+    }
+
+    public boolean isCreateTestMethodBasedScriptingContainer() {
+        return createTestMethodBasedScriptingContainer;
+    }
 }
