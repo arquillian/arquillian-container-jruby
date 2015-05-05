@@ -1,11 +1,11 @@
 package org.arquillian.jruby.scripts;
 
 
-import org.arquillian.jruby.api.RubyResource;
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -33,7 +33,7 @@ public class ClassScopedScriptExecutionTest {
     // In contrast to TestScopedScriptExecutionTest this ScriptingContainer is
     // Test class scoped, so that the value of @a is not lost between
     // the two test methods
-    @RubyResource
+    @ArquillianResource
     private Ruby ruby;
 
     @Test

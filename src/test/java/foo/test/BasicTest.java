@@ -1,9 +1,9 @@
 package foo.test;
 
-import org.arquillian.jruby.api.RubyResource;
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.FileAsset;
@@ -39,7 +39,7 @@ public class BasicTest {
     private static Ruby lastRubyInstance;
 
     @Test
-    public void shouldExecuteSimpleRubyStatement(@RubyResource Ruby rubyInstance) throws Exception {
+    public void shouldExecuteSimpleRubyStatement(@ArquillianResource Ruby rubyInstance) throws Exception {
 
         assertNotSame(lastRubyInstance, rubyInstance);
         lastRubyInstance = rubyInstance;
@@ -53,7 +53,7 @@ public class BasicTest {
 
     @Test
     @RubyScript("requireasciidoctor.rb")
-    public void shouldApplyScriptBeforeTest(@RubyResource Ruby rubyInstance) throws Exception {
+    public void shouldApplyScriptBeforeTest(@ArquillianResource Ruby rubyInstance) throws Exception {
         assertNotSame(lastRubyInstance, rubyInstance);
         lastRubyInstance = rubyInstance;
 
