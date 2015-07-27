@@ -21,7 +21,7 @@ repositories {
     maven { url 'http://rubygems-proxy.torquebox.org/releases' }
 }
 
-version = '1.0.0.Alpha2'
+version = '1.0.0.Alpha3-SNAPSHOT'
 
 ext {
     version_arquillian          = '1.1.8.Final'
