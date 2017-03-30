@@ -19,8 +19,7 @@ final class SecurityActions {
     /**
      * No instantiation
      */
-    private SecurityActions()
-    {
+    private SecurityActions() {
         throw new UnsupportedOperationException("No instantiation");
     }
 
@@ -31,45 +30,33 @@ final class SecurityActions {
     /**
      * Obtains the Thread Context ClassLoader
      */
-    static ClassLoader getThreadContextClassLoader()
-    {
+    static ClassLoader getThreadContextClassLoader() {
         return AccessController.doPrivileged(GetTcclAction.INSTANCE);
     }
 
-    static boolean isClassPresent(String name)
-    {
-        try
-        {
+    static boolean isClassPresent(String name) {
+        try {
             loadClass(name);
             return true;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
     }
 
-    static Class<?> loadClass(String className)
-    {
-        try
-        {
+    static Class<?> loadClass(String className) {
+        try {
             return Class.forName(className, true, getThreadContextClassLoader());
-        }
-        catch (ClassNotFoundException e)
-        {
-            try
-            {
+        } catch (ClassNotFoundException e) {
+            try {
                 return Class.forName(className, true, SecurityActions.class.getClassLoader());
-            }
-            catch (ClassNotFoundException e2)
-            {
+            } catch (ClassNotFoundException e2) {
                 throw new RuntimeException("Could not load class " + className, e2);
             }
         }
     }
 
-    static <T> T newInstance(final String className, final Class<?>[] argumentTypes, final Object[] arguments, final Class<T> expectedType)
-    {
+    static <T> T newInstance(final String className, final Class<?>[] argumentTypes, final Object[] arguments,
+        final Class<T> expectedType) {
         @SuppressWarnings("unchecked")
         Class<T> implClass = (Class<T>) loadClass(className);
         if (!expectedType.isAssignableFrom(implClass)) {
@@ -78,24 +65,18 @@ final class SecurityActions {
         return newInstance(implClass, argumentTypes, arguments);
     }
 
-    static <T> T newInstance(final String className, final Class<?>[] argumentTypes, final Object[] arguments, final Class<T> expectedType, ClassLoader classLoader)
-    {
+    static <T> T newInstance(final String className, final Class<?>[] argumentTypes, final Object[] arguments,
+        final Class<T> expectedType, ClassLoader classLoader) {
         Class<?> clazz = null;
-        try
-        {
+        try {
             clazz = Class.forName(className, false, classLoader);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Could not load class " + className, e);
         }
         Object obj = newInstance(clazz, argumentTypes, arguments);
-        try
-        {
+        try {
             return expectedType.cast(obj);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Loaded class " + className + " is not of expected type " + expectedType, e);
         }
     }
@@ -104,40 +85,40 @@ final class SecurityActions {
      * Create a new instance by finding a constructor that matches the argumentTypes signature
      * using the arguments for instantiation.
      *
-     * @param className Full classname of class to create
-     * @param argumentTypes The constructor argument types
-     * @param arguments The constructor arguments
+     * @param className
+     *     Full classname of class to create
+     * @param argumentTypes
+     *     The constructor argument types
+     * @param arguments
+     *     The constructor arguments
+     *
      * @return a new instance
-     * @throws IllegalArgumentException if className, argumentTypes, or arguments are null
-     * @throws RuntimeException if any exceptions during creation
+     *
+     * @throws IllegalArgumentException
+     *     if className, argumentTypes, or arguments are null
+     * @throws RuntimeException
+     *     if any exceptions during creation
      * @author <a href="mailto:aslak@conduct.no">Aslak Knutsen</a>
      * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
      */
-    static <T> T newInstance(final Class<T> implClass, final Class<?>[] argumentTypes, final Object[] arguments)
-    {
-        if (implClass == null)
-        {
+    static <T> T newInstance(final Class<T> implClass, final Class<?>[] argumentTypes, final Object[] arguments) {
+        if (implClass == null) {
             throw new IllegalArgumentException("ImplClass must be specified");
         }
-        if (argumentTypes == null)
-        {
+        if (argumentTypes == null) {
             throw new IllegalArgumentException("ArgumentTypes must be specified. Use empty array if no arguments");
         }
-        if (arguments == null)
-        {
+        if (arguments == null) {
             throw new IllegalArgumentException("Arguments must be specified. Use empty array if no arguments");
         }
         final T obj;
-        try
-        {
+        try {
             Constructor<T> constructor = getConstructor(implClass, argumentTypes);
-            if(!constructor.isAccessible()) {
+            if (!constructor.isAccessible()) {
                 constructor.setAccessible(true);
             }
             obj = constructor.newInstance(arguments);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Could not create new instance of " + implClass, e);
         }
 
@@ -146,43 +127,31 @@ final class SecurityActions {
 
     /**
      * Obtains the Constructor specified from the given Class and argument types
-     * @param clazz
-     * @param argumentTypes
-     * @return
+     *
      * @throws NoSuchMethodException
      */
     static <T> Constructor<T> getConstructor(final Class<T> clazz, final Class<?>... argumentTypes)
-            throws NoSuchMethodException
-    {
-        try
-        {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<Constructor<T>>()
-            {
-                public Constructor<T> run() throws NoSuchMethodException
-                {
+        throws NoSuchMethodException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Constructor<T>>() {
+                public Constructor<T> run() throws NoSuchMethodException {
                     return clazz.getDeclaredConstructor(argumentTypes);
                 }
             });
         }
         // Unwrap
-        catch (final PrivilegedActionException pae)
-        {
+        catch (final PrivilegedActionException pae) {
             final Throwable t = pae.getCause();
             // Rethrow
-            if (t instanceof NoSuchMethodException)
-            {
+            if (t instanceof NoSuchMethodException) {
                 throw (NoSuchMethodException) t;
-            }
-            else
-            {
+            } else {
                 // No other checked Exception thrown by Class.getConstructor
-                try
-                {
+                try {
                     throw (RuntimeException) t;
                 }
                 // Just in case we've really messed up
-                catch (final ClassCastException cce)
-                {
+                catch (final ClassCastException cce) {
                     throw new RuntimeException("Obtained unchecked Exception; this code should never be reached", t);
                 }
             }
@@ -192,22 +161,21 @@ final class SecurityActions {
     /**
      * Set a single Field value
      *
-     * @param target The object to set it on
-     * @param fieldName The field name
-     * @param value The new value
+     * @param target
+     *     The object to set it on
+     * @param fieldName
+     *     The field name
+     * @param value
+     *     The new value
      */
-    public static void setFieldValue(final Class<?> source, final Object target, final String fieldName, final Object value) throws NoSuchFieldException
-    {
-        try
-        {
-            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
-            {
+    public static void setFieldValue(final Class<?> source, final Object target, final String fieldName,
+        final Object value) throws NoSuchFieldException {
+        try {
+            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>() {
                 @Override
-                public Void run() throws Exception
-                {
+                public Void run() throws Exception {
                     Field field = source.getDeclaredField(fieldName);
-                    if(!field.isAccessible())
-                    {
+                    if (!field.isAccessible()) {
                         field.setAccessible(true);
                     }
                     field.set(target, value);
@@ -216,45 +184,34 @@ final class SecurityActions {
             });
         }
         // Unwrap
-        catch (final PrivilegedActionException pae)
-        {
+        catch (final PrivilegedActionException pae) {
             final Throwable t = pae.getCause();
             // Rethrow
-            if (t instanceof NoSuchFieldException)
-            {
+            if (t instanceof NoSuchFieldException) {
                 throw (NoSuchFieldException) t;
-            }
-            else
-            {
+            } else {
                 // No other checked Exception thrown by Class.getConstructor
-                try
-                {
+                try {
                     throw (RuntimeException) t;
                 }
                 // Just in case we've really messed up
-                catch (final ClassCastException cce)
-                {
+                catch (final ClassCastException cce) {
                     throw new RuntimeException("Obtained unchecked Exception; this code should never be reached", t);
                 }
             }
         }
     }
 
-    public static List<Field> getFieldsWithAnnotation(final Class<?> source, final Class<? extends Annotation> annotationClass)
-    {
-        List<Field> declaredAccessableFields = AccessController.doPrivileged(new PrivilegedAction<List<Field>>()
-        {
-            public List<Field> run()
-            {
+    public static List<Field> getFieldsWithAnnotation(final Class<?> source,
+        final Class<? extends Annotation> annotationClass) {
+        List<Field> declaredAccessableFields = AccessController.doPrivileged(new PrivilegedAction<List<Field>>() {
+            public List<Field> run() {
                 List<Field> foundFields = new ArrayList<Field>();
                 Class<?> nextSource = source;
                 while (nextSource != Object.class) {
-                    for(Field field : nextSource.getDeclaredFields())
-                    {
-                        if(field.isAnnotationPresent(annotationClass))
-                        {
-                            if(!field.isAccessible())
-                            {
+                    for (Field field : nextSource.getDeclaredFields()) {
+                        if (field.isAnnotationPresent(annotationClass)) {
+                            if (!field.isAccessible()) {
                                 field.setAccessible(true);
                             }
                             foundFields.add(field);
@@ -268,21 +225,16 @@ final class SecurityActions {
         return declaredAccessableFields;
     }
 
-    public static List<Method> getMethodsWithAnnotation(final Class<?> source, final Class<? extends Annotation> annotationClass)
-    {
-        List<Method> declaredAccessableMethods = AccessController.doPrivileged(new PrivilegedAction<List<Method>>()
-        {
-            public List<Method> run()
-            {
+    public static List<Method> getMethodsWithAnnotation(final Class<?> source,
+        final Class<? extends Annotation> annotationClass) {
+        List<Method> declaredAccessableMethods = AccessController.doPrivileged(new PrivilegedAction<List<Method>>() {
+            public List<Method> run() {
                 List<Method> foundMethods = new ArrayList<Method>();
                 Class<?> nextSource = source;
                 while (nextSource != Object.class) {
-                    for(Method method : nextSource.getDeclaredMethods())
-                    {
-                        if(method.isAnnotationPresent(annotationClass))
-                        {
-                            if(!method.isAccessible())
-                            {
+                    for (Method method : nextSource.getDeclaredMethods()) {
+                        if (method.isAnnotationPresent(annotationClass)) {
+                            if (!method.isAccessible()) {
                                 method.setAccessible(true);
                             }
                             foundMethods.add(method);
@@ -336,13 +288,13 @@ final class SecurityActions {
     /**
      * Single instance to get the TCCL
      */
-    private enum GetTcclAction implements PrivilegedAction<ClassLoader> {
+    private enum GetTcclAction implements PrivilegedAction<ClassLoader>
+
+    {
         INSTANCE;
 
-        public ClassLoader run()
-        {
-            return Thread.currentThread().getContextClassLoader();
-        }
-
+    public ClassLoader run() {
+        return Thread.currentThread().getContextClassLoader();
     }
+}
 }

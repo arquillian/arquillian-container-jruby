@@ -44,7 +44,8 @@ public class CachingGemInstaller implements GemInstaller {
         }
     }
 
-    public Path addToCache(Map<String, File> gemFiles, Path originalTestTargetDir) throws IOException, NoSuchAlgorithmException {
+    public Path addToCache(Map<String, File> gemFiles, Path originalTestTargetDir)
+        throws IOException, NoSuchAlgorithmException {
 
         String digest = computeDigest(gemFiles);
 
@@ -60,7 +61,7 @@ public class CachingGemInstaller implements GemInstaller {
         Collections.sort(gemNames);
 
         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-        for (String gemName: gemNames) {
+        for (String gemName : gemNames) {
             messageDigest.update(gemName.getBytes());
         }
         return new BigInteger(messageDigest.digest()).abs().toString(16);
@@ -89,7 +90,6 @@ public class CachingGemInstaller implements GemInstaller {
         } catch (IOException | NoSuchAlgorithmException e) {
             throw new DeploymentException("Unexpected exception while copying gem dir to cache", e);
         }
-
     }
 
     @Override

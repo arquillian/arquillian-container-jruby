@@ -30,7 +30,8 @@ public class RubyResourceProvider implements ResourceProvider {
         } else if (AnnotationUtils.filterAnnotation(annotations, ResourceProvider.ClassInjection.class) != null) {
             return scopedResourcesInstance.get().getClassScopedScriptingContainer().getProvider().getRuntime();
         } else {
-            throw new IllegalArgumentException("Don't know how to resolve Ruby instance with qualifiers " + Arrays.asList(annotations));
+            throw new IllegalArgumentException(
+                "Don't know how to resolve Ruby instance with qualifiers " + Arrays.asList(annotations));
         }
     }
 }

@@ -6,19 +6,19 @@ import java.util.List;
 
 public final class AnnotationUtils {
 
-    private AnnotationUtils() {}
+    private AnnotationUtils() {
+    }
 
     public static <T extends Annotation> T filterAnnotation(Annotation[] annotations, Class<T> annotationClass) {
-        if(annotations == null) {
+        if (annotations == null) {
             return null;
         }
         List<Annotation> filtered = new ArrayList<Annotation>();
-        for(Annotation annotation : annotations) {
-            if(annotationClass.isInstance(annotation)) {
+        for (Annotation annotation : annotations) {
+            if (annotationClass.isInstance(annotation)) {
                 return (T) annotation;
             }
         }
         return null;
     }
-
 }

@@ -21,8 +21,11 @@ public class JRubyGemCacheTest {
 
     @BeforeClass
     public static void resolveAsciidoctorGem() {
-        asciidoctorGem = Maven.configureResolver().withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
-                .resolve("rubygems:asciidoctor:gem:1.5.2").withoutTransitivity().asSingleFile();
+        asciidoctorGem = Maven.configureResolver()
+            .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
+            .resolve("rubygems:asciidoctor:gem:1.5.2")
+            .withoutTransitivity()
+            .asSingleFile();
     }
 
     @Test
@@ -33,11 +36,12 @@ public class JRubyGemCacheTest {
         cachedir.mkdirs();
         Path targetGemDir = Paths.get("build", "shouldReturnNullOnCacheMissGemDir");
         Path targetArchiveDir = Paths.get("build", "shouldReturnNullOnCacheMissArchiveDir");
-        CachingGemInstaller gemCache = new CachingGemInstaller(Paths.get(cachedir.toURI()), targetGemDir, targetArchiveDir);
+        CachingGemInstaller gemCache =
+            new CachingGemInstaller(Paths.get(cachedir.toURI()), targetGemDir, targetArchiveDir);
 
         Map<String, File> gemFiles = Collections.singletonMap(
-                asciidoctorGem.getName(),
-                asciidoctorGem);
+            asciidoctorGem.getName(),
+            asciidoctorGem);
 
         // When
         Path cachedGemsDirectory = gemCache.getCachedGemDirectory(gemFiles);
@@ -54,7 +58,8 @@ public class JRubyGemCacheTest {
         cachedir.mkdirs();
         Path targetGemDir = Paths.get("build", "shouldReturnCachedDirOnCacheHitGemDir");
         Path targetArchiveDir = Paths.get("build", "shouldReturnCachedDirOnCacheHitArchiveDir");
-        CachingGemInstaller gemCache = new CachingGemInstaller(Paths.get(cachedir.toURI()), targetGemDir, targetArchiveDir);
+        CachingGemInstaller gemCache =
+            new CachingGemInstaller(Paths.get(cachedir.toURI()), targetGemDir, targetArchiveDir);
 
         File originalTestTargetDir = new File("build/originalTestCachehitdir");
         originalTestTargetDir.mkdirs();
@@ -62,8 +67,8 @@ public class JRubyGemCacheTest {
         FileUtils.writeStringToFile(new File(originalTestTargetDir, "test.txt"), HELLO_WORLD);
 
         Map<String, File> gemFiles = Collections.singletonMap(
-                asciidoctorGem.getName(),
-                asciidoctorGem);
+            asciidoctorGem.getName(),
+            asciidoctorGem);
 
         // When
         @SuppressWarnings("unused")
@@ -74,6 +79,5 @@ public class JRubyGemCacheTest {
         assertNotNull(cacheHit);
 
         assertThat(FileUtils.readFileToString(new File(cacheHit.toFile(), "test.txt")), is(HELLO_WORLD));
-
     }
 }

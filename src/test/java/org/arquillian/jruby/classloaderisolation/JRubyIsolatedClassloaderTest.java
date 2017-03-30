@@ -24,5 +24,4 @@ public class JRubyIsolatedClassloaderTest {
         thrown.expectMessage("LoadError");
         scriptingContainer.runScriptlet("require 'test.rb'");
     }
-
 }

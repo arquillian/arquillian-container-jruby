@@ -51,8 +51,12 @@ public class JRubyDeployableContainer implements DeployableContainer<JRubyConfig
     @Override
     public void start() throws LifecycleException {
         try {
-            Path tempGemDir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "arquillianJRubyGemDir");
-            Path tempArchiveDir = Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")), "arquillianJRubyArchiveDir");
+            Path tempGemDir =
+                Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")),
+                    "arquillianJRubyGemDir");
+            Path tempArchiveDir =
+                Files.createTempDirectory(FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir")),
+                    "arquillianJRubyArchiveDir");
             temporaryDirInstanceProducer.set(new JRubyTemporaryDir(tempGemDir, tempArchiveDir));
             LOG.fine("Unpacking archive in " + tempArchiveDir);
             LOG.fine("Installing gems in " + tempGemDir);
@@ -62,7 +66,8 @@ public class JRubyDeployableContainer implements DeployableContainer<JRubyConfig
     }
 
     @Override
-    public void stop() throws LifecycleException {}
+    public void stop() throws LifecycleException {
+    }
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -96,10 +101,10 @@ public class JRubyDeployableContainer implements DeployableContainer<JRubyConfig
             throw new IllegalStateException("Only one deployment at a time supported.");
         }
         Path tempGemDir = temporaryDirInstanceProducer.get().getTempGemDir();
-        Path tempArchiveDir  = temporaryDirInstanceProducer.get().getTempArchiveDir();
+        Path tempArchiveDir = temporaryDirInstanceProducer.get().getTempArchiveDir();
         installer = containerConfig.getGemDir() != null ?
-                new CachingGemInstaller(Paths.get(containerConfig.getGemDir()), tempGemDir, tempArchiveDir) :
-                new UncachedGemInstaller(tempGemDir, tempArchiveDir);
+            new CachingGemInstaller(Paths.get(containerConfig.getGemDir()), tempGemDir, tempArchiveDir) :
+            new UncachedGemInstaller(tempGemDir, tempArchiveDir);
 
         long start = System.currentTimeMillis();
         installer.installGemsFromArchive(archive);
@@ -107,5 +112,4 @@ public class JRubyDeployableContainer implements DeployableContainer<JRubyConfig
 
         return new ProtocolMetaData();
     }
-
 }

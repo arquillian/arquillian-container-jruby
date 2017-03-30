@@ -8,7 +8,6 @@ public class JRubyTemporaryDir {
 
     private Path tempGemDir;
 
-
     public JRubyTemporaryDir(Path tempGemDir, Path tempArchiveDir) {
         this.tempGemDir = tempGemDir;
         this.tempArchiveDir = tempArchiveDir;

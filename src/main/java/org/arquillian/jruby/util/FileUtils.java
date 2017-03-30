@@ -34,7 +34,6 @@ public final class FileUtils {
                 Files.delete(dir);
                 return FileVisitResult.CONTINUE;
             }
-
         });
     }
 
@@ -43,27 +42,28 @@ public final class FileUtils {
         toPath.toFile().mkdirs();
 
         Files.walkFileTree(
-                fromPath,
-                new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                        Path targetPath = toPath.resolve(fromPath.relativize(dir));
-                        if (!Files.exists(targetPath)) {
-                            Files.createDirectory(targetPath);
-                        }
-                        return FileVisitResult.CONTINUE;
+            fromPath,
+            new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    Path targetPath = toPath.resolve(fromPath.relativize(dir));
+                    if (!Files.exists(targetPath)) {
+                        Files.createDirectory(targetPath);
                     }
-
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        Files.copy(file, toPath.resolve(fromPath.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
-                        return FileVisitResult.CONTINUE;
-                    }
+                    return FileVisitResult.CONTINUE;
                 }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.copy(file, toPath.resolve(fromPath.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
+                    return FileVisitResult.CONTINUE;
+                }
+            }
         );
     }
 
-    public static File unpackGemFromArchive(ArchivePath archivePath, Node gemEntry, Path targetDir) throws DeploymentException {
+    public static File unpackGemFromArchive(ArchivePath archivePath, Node gemEntry, Path targetDir)
+        throws DeploymentException {
         File gemFile = new File(targetDir.toFile(), archivePath.get());
         if (gemFile.exists()) {
             // Was unpacked before.
@@ -71,7 +71,10 @@ public final class FileUtils {
         }
         if (!gemFile.getParentFile().exists()) {
             if (!gemFile.getParentFile().mkdirs()) {
-                throw new DeploymentException("Error while unpacking file " + archivePath + " from archive. Could not create directory " + gemFile.getParentFile());
+                throw new DeploymentException("Error while unpacking file "
+                    + archivePath
+                    + " from archive. Could not create directory "
+                    + gemFile.getParentFile());
             }
         }
         Asset asset = gemEntry.getAsset();
@@ -93,5 +96,4 @@ public final class FileUtils {
         }
         return gemFile;
     }
-
 }

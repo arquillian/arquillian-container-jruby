@@ -1,6 +1,5 @@
 package org.arquillian.jruby.scripts;
 
-
 import org.arquillian.jruby.api.RubyScript;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -26,8 +25,8 @@ public class ClassScopedScriptExecutionTest {
     @Deployment
     public static GenericArchive deploy() throws Exception {
         return ShrinkWrap.create(GenericArchive.class)
-                .add(new StringAsset("@a=1\n"), "testscript1.rb")
-                .add(new StringAsset("@a=@a+1\n"), "testscript2.rb");
+            .add(new StringAsset("@a=1\n"), "testscript1.rb")
+            .add(new StringAsset("@a=@a+1\n"), "testscript2.rb");
     }
 
     // In contrast to TestScopedScriptExecutionTest this ScriptingContainer is

@@ -55,7 +55,7 @@ public class UncachedGemInstaller implements GemInstaller {
 
     Map<String, File> getGems(Map<ArchivePath, File> archiveFiles) {
         Map<String, File> ret = new HashMap<>();
-        for (Map.Entry<ArchivePath, File> archiveFile: archiveFiles.entrySet()) {
+        for (Map.Entry<ArchivePath, File> archiveFile : archiveFiles.entrySet()) {
             if (archiveFile.getKey().get().matches("/.+gem")) {
                 ret.put(getGemFullNameFromArchivePath(archiveFile.getKey()), archiveFile.getValue());
             }
@@ -69,7 +69,7 @@ public class UncachedGemInstaller implements GemInstaller {
 
         Map<ArchivePath, File> files = new HashMap<>();
 
-        for (Map.Entry<ArchivePath, Node> gemEntry: gems.entrySet()) {
+        for (Map.Entry<ArchivePath, Node> gemEntry : gems.entrySet()) {
             LOG.fine("Unpack " + gemEntry.getKey());
 
             File gemFile = FileUtils.unpackGemFromArchive(gemEntry.getKey(), gemEntry.getValue(), targetArchiveDir);
@@ -79,8 +79,8 @@ public class UncachedGemInstaller implements GemInstaller {
         return files;
     }
 
-
-    private void installGems(Map<String, File> gemsToInstall) throws IOException, InterruptedException, DeploymentException {
+    private void installGems(Map<String, File> gemsToInstall)
+        throws IOException, InterruptedException, DeploymentException {
         if (gemsToInstall == null || gemsToInstall.isEmpty()) {
             return;
         }
@@ -90,12 +90,12 @@ public class UncachedGemInstaller implements GemInstaller {
         final String java = javaHome + File.separator + "bin" + File.separator + "java";
 
         ProcessBuilder pb = new ProcessBuilder(
-                java,
-                "-classpath", System.getProperty("java.class.path"),
-                "org.jruby.Main",
-                "-S", "gem", "install"
+            java,
+            "-classpath", System.getProperty("java.class.path"),
+            "org.jruby.Main",
+            "-S", "gem", "install"
         );
-        for (Map.Entry<String, File> gemToInstall: gemsToInstall.entrySet()) {
+        for (Map.Entry<String, File> gemToInstall : gemsToInstall.entrySet()) {
             pb.command().add(gemToInstall.getValue().getAbsolutePath());
         }
         pb.command().add("--ignore-dependencies");
@@ -106,7 +106,7 @@ public class UncachedGemInstaller implements GemInstaller {
         Map<String, String> envEntries = new HashMap<>();
         envEntries.put("JBUNDLE_SKIP", "true");
         envEntries.put("JARS_SKIP", "true");
-        if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
             envEntries.put("TMP", System.getenv("TMP"));
             envEntries.put("TEMP", System.getenv("TEMP"));
         }
@@ -118,7 +118,6 @@ public class UncachedGemInstaller implements GemInstaller {
         if (ret != 0) {
             throw new DeploymentException("Installation failed " + ret);
         }
-
     }
 
     private String getGemFullNameFromArchivePath(ArchivePath key) {
@@ -130,5 +129,4 @@ public class UncachedGemInstaller implements GemInstaller {
         FileUtils.deleteDir(targetGemDir);
         FileUtils.deleteDir(targetArchiveDir);
     }
-
 }

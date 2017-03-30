@@ -30,8 +30,11 @@ public class JRubyUncachedTest {
     @Deployment(name = "asciidoctor", managed = false)
     public static JavaArchive deploy() throws Exception {
         return ShrinkWrap.create(JavaArchive.class)
-                .addAsResource(Maven.configureResolver().withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
-                        .resolve("rubygems:asciidoctor:gem:1.5.2").withoutTransitivity().asSingleFile());
+            .addAsResource(Maven.configureResolver()
+                .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
+                .resolve("rubygems:asciidoctor:gem:1.5.2")
+                .withoutTransitivity()
+                .asSingleFile());
     }
 
     @Test
@@ -41,8 +44,8 @@ public class JRubyUncachedTest {
         deployer.deploy("asciidoctor");
         try {
             assertThat(
-                    (Boolean) rubyInstance.evalScriptlet("require 'asciidoctor'").toJava(Boolean.class),
-                    is(Boolean.TRUE));
+                (Boolean) rubyInstance.evalScriptlet("require 'asciidoctor'").toJava(Boolean.class),
+                is(Boolean.TRUE));
 
             URL url = rubyInstance.getJRubyClassLoader().getResource("asciidoctor-1.5.2.gem");
             assertThat("Gem not available via classloader!", url, notNullValue());
@@ -58,7 +61,5 @@ public class JRubyUncachedTest {
     public void shouldInjectRubyInstance() throws Exception {
 
         assertThat("Ruby instance not injected!", rubyInstance, notNullValue());
-
     }
-
 }

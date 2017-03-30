@@ -44,7 +44,6 @@ public class JRubyTestObserver {
     @ApplicationScoped
     protected Instance<JRubyConfiguration> configuration;
 
-
     private static final Logger LOG = Logger.getLogger(RubyResourceProvider.class.getName());
 
     public void createScopedResources(@Observes(precedence = 1000) BeforeClass beforeClass) {
@@ -63,7 +62,6 @@ public class JRubyTestObserver {
         if (scopedResourcesInstanceProducer.get().isCreateTestClassBasedScriptingContainer()) {
             scopedResourcesInstanceProducer.get().setClassScopedScriptingContainer(createScriptingContainer());
         }
-
     }
 
     public void checkCreateTestMethodBasedScriptingContainer(@Observes(precedence = 100) Before before) {
@@ -81,7 +79,6 @@ public class JRubyTestObserver {
         if (scopedResourcesInstanceProducer.get().isCreateTestMethodBasedScriptingContainer()) {
             scopedResourcesInstanceProducer.get().setTestScopedScriptingContainer(createScriptingContainer());
         }
-
     }
 
     // Event is either thrown by JRubyTestObserver#beforeTestMethod if scripts should be executed on
@@ -137,9 +134,8 @@ public class JRubyTestObserver {
         return cs.getLocation();
     }
 
-
     private boolean isTestClassRequiringScriptingContainer(Class<?> testClass) {
-        for (Field f: SecurityActions.getFieldsWithAnnotation(testClass, ArquillianResource.class)) {
+        for (Field f : SecurityActions.getFieldsWithAnnotation(testClass, ArquillianResource.class)) {
             if (f.getType() == Ruby.class || f.getType() == ScriptingContainer.class) {
                 return true;
             }
@@ -147,11 +143,12 @@ public class JRubyTestObserver {
         return false;
     }
 
-
     private boolean isTestMethodUsingParameterInjectedRubyResource(Method testMethod) {
         for (int i = 0; i < testMethod.getParameterTypes().length; i++) {
-            if (testMethod.getParameterTypes()[i] == Ruby.class || testMethod.getParameterTypes()[i] == ScriptingContainer.class) {
-                if (AnnotationUtils.filterAnnotation(testMethod.getParameterAnnotations()[i], ArquillianResource.class) != null) {
+            if (testMethod.getParameterTypes()[i] == Ruby.class
+                || testMethod.getParameterTypes()[i] == ScriptingContainer.class) {
+                if (AnnotationUtils.filterAnnotation(testMethod.getParameterAnnotations()[i], ArquillianResource.class)
+                    != null) {
                     return true;
                 }
             }
@@ -159,9 +156,8 @@ public class JRubyTestObserver {
         return false;
     }
 
-
-
-    public void handleRubyScriptAnnotation(ScriptingContainer scriptingContainer, RubyScript rubyScriptAnnotation) throws IOException {
+    public void handleRubyScriptAnnotation(ScriptingContainer scriptingContainer, RubyScript rubyScriptAnnotation)
+        throws IOException {
         if (rubyScriptAnnotation != null) {
             String[] scripts = rubyScriptAnnotation.value();
             if (scripts != null) {
@@ -173,15 +169,17 @@ public class JRubyTestObserver {
     }
 
     private void applyScript(ScriptingContainer scriptingContainer, String script) throws IOException {
-        try (FileReader scriptReader = new FileReader(temporaryDirInstance.get().getTempArchiveDir().resolve(script).toAbsolutePath().toFile())) {
+        try (FileReader scriptReader = new FileReader(
+            temporaryDirInstance.get().getTempArchiveDir().resolve(script).toAbsolutePath().toFile())) {
             scriptingContainer.runScriptlet(
-                    scriptReader,
-                    script);
+                scriptReader,
+                script);
         }
     }
 
     public void afterTestClearJRubyInstance(@Observes After afterEvent) {
-        ScriptingContainer testScopedScriptingContainer = scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer();
+        ScriptingContainer testScopedScriptingContainer =
+            scopedResourcesInstanceProducer.get().getTestScopedScriptingContainer();
         if (testScopedScriptingContainer != null) {
             testScopedScriptingContainer.terminate();
         }
@@ -189,12 +187,11 @@ public class JRubyTestObserver {
     }
 
     public void afterTestClassCleanJRubyInstance(@Observes AfterClass afterClassEvent) {
-        ScriptingContainer classScopedScriptingContainer = scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
+        ScriptingContainer classScopedScriptingContainer =
+            scopedResourcesInstanceProducer.get().getClassScopedScriptingContainer();
         if (classScopedScriptingContainer != null) {
             classScopedScriptingContainer.terminate();
         }
         scopedResourcesInstanceProducer.get().setClassScopedScriptingContainer(null);
     }
-
-
 }

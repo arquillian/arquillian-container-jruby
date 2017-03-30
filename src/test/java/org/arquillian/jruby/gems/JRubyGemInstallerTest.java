@@ -19,8 +19,11 @@ public class JRubyGemInstallerTest {
 
     @BeforeClass
     public static void resolveAsciidoctorGem() throws Exception {
-        asciidoctorGem = Maven.configureResolver().withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
-                .resolve("rubygems:asciidoctor:gem:1.5.2").withoutTransitivity().asSingleFile();
+        asciidoctorGem = Maven.configureResolver()
+            .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
+            .resolve("rubygems:asciidoctor:gem:1.5.2")
+            .withoutTransitivity()
+            .asSingleFile();
     }
 
     @Test
@@ -28,7 +31,7 @@ public class JRubyGemInstallerTest {
 
         // Given
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class)
-                .addAsResource(asciidoctorGem);
+            .addAsResource(asciidoctorGem);
 
         Path targetGemDir = Paths.get("build", "shouldInstallGemGemDir");
         Path targetArchiveDir = Paths.get("build", "shouldInstallGemArchiveDir");
@@ -38,14 +41,14 @@ public class JRubyGemInstallerTest {
 
         // Then
         assertTrue(
-                "Gem not unpacked from archive!",
-                targetArchiveDir.resolve("asciidoctor-1.5.2.gem").toFile().exists());
+            "Gem not unpacked from archive!",
+            targetArchiveDir.resolve("asciidoctor-1.5.2.gem").toFile().exists());
         assertTrue(
-                "Gem not installed",
-                targetGemDir.resolve("gems")
-                        .resolve("asciidoctor-1.5.2")
-                        .resolve("lib")
-                        .resolve("asciidoctor.rb").toFile().exists());
+            "Gem not installed",
+            targetGemDir.resolve("gems")
+                .resolve("asciidoctor-1.5.2")
+                .resolve("lib")
+                .resolve("asciidoctor.rb").toFile().exists());
     }
 
     @Test
@@ -67,6 +70,4 @@ public class JRubyGemInstallerTest {
         assertFalse(targetGemDir.toFile().exists());
         assertFalse(targetArchiveDir.toFile().exists());
     }
-
-
 }

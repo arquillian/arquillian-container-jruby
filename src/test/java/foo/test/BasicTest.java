@@ -27,13 +27,13 @@ public class BasicTest {
     @Deployment
     public static GenericArchive deploy() throws Exception {
         File asciidoctorGem = Maven.configureResolver()
-                .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
-                .resolve("rubygems:asciidoctor:gem:1.5.2")
-                .withoutTransitivity().asSingleFile();
+            .withRemoteRepo("rubygems", "http://rubygems-proxy.torquebox.org/releases", "default")
+            .resolve("rubygems:asciidoctor:gem:1.5.2")
+            .withoutTransitivity().asSingleFile();
 
         return ShrinkWrap.create(GenericArchive.class)
-                .add(new FileAsset(asciidoctorGem), asciidoctorGem.getName())
-                .add(new StringAsset("require 'asciidoctor'\n"), "requireasciidoctor.rb");
+            .add(new FileAsset(asciidoctorGem), asciidoctorGem.getName())
+            .add(new StringAsset("require 'asciidoctor'\n"), "requireasciidoctor.rb");
     }
 
     private static Ruby lastRubyInstance;
@@ -45,10 +45,10 @@ public class BasicTest {
         lastRubyInstance = rubyInstance;
 
         IRubyObject result = rubyInstance.evalScriptlet(
-                "java.lang.System.getProperties.map {|k,v| %(#{k}=#{v.inspect}) } * '\\n'");
+            "java.lang.System.getProperties.map {|k,v| %(#{k}=#{v.inspect}) } * '\\n'");
         assertThat(
-                (String)JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
-                containsString("java.io.tmpdir="));
+            (String) JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
+            containsString("java.io.tmpdir="));
     }
 
     @Test
@@ -58,10 +58,9 @@ public class BasicTest {
         lastRubyInstance = rubyInstance;
 
         IRubyObject result = rubyInstance.evalScriptlet(
-                "Asciidoctor.convert '*This* is Asciidoctor.'");
+            "Asciidoctor.convert '*This* is Asciidoctor.'");
         assertThat(
-                (String)JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
-                containsString("<strong>This</strong> is Asciidoctor."));
-
+            (String) JavaEmbedUtils.rubyToJava(rubyInstance, result, String.class),
+            containsString("<strong>This</strong> is Asciidoctor."));
     }
 }

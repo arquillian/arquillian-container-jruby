@@ -15,5 +15,4 @@ public class JRubyExtension implements LoadableExtension {
         builder.service(ResourceProvider.class, ScriptingContainerResourceProvider.class);
         builder.observer(JRubyTestObserver.class);
     }
-
 }

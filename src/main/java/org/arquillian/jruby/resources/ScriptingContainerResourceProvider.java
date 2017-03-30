@@ -30,7 +30,8 @@ public class ScriptingContainerResourceProvider implements ResourceProvider {
         } else if (AnnotationUtils.filterAnnotation(annotations, ResourceProvider.ClassInjection.class) != null) {
             return scopedResourcesInstance.get().getClassScopedScriptingContainer();
         } else {
-            throw new IllegalArgumentException("Don't know how to resolve ScriptingContainer instance with qualifiers " + Arrays.asList(annotations));
+            throw new IllegalArgumentException(
+                "Don't know how to resolve ScriptingContainer instance with qualifiers " + Arrays.asList(annotations));
         }
     }
 }
