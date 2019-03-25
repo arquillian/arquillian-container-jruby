@@ -66,7 +66,7 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-all', version: version_mockito
     testCompile group: 'org.jruby', name: 'jruby-complete', version: version_jruby
 
-    testgems group: 'rubygems', name: 'asciidoctor', version: '1.5.2'
+    testgems group: 'rubygems', name: 'asciidoctor', version: '2.0.0'
 }
 
 
